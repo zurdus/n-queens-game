@@ -4,7 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.zurdus.nqueens.feature.boardsize.presentation.BoardSizeRoute
+import com.zurdus.nqueens.feature.boardsize.presentation.BoardSizeScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,7 +17,7 @@ internal fun NavGraphBuilder.boardSizeNavGraph(
         startDestination = BoardSizeDestination.Selection,
     ) {
         composable<BoardSizeDestination.Selection> {
-            BoardSizeRoute()
+            BoardSizeScreen()
         }
     }
 }

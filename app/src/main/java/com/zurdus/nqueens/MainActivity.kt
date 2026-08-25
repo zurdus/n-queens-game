@@ -9,7 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.zurdus.nqueens.navigation.NQueensNavHost
 import com.zurdus.nqueens.ui.theme.NQueensTheme
 
@@ -33,10 +32,4 @@ private fun NQueensApp() {
             NQueensNavHost()
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun NQueensAppPreview() {
-    NQueensApp()
 }

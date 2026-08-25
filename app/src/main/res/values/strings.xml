@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">N Queens</string>
+    <string name="board_preview_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d board preview</string>
 </resources>

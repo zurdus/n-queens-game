@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">N Queens</string>
+    <string name="board_size_title">Choose your board size</string>
+    <string name="board_size_dimension">%1$d × %2$d</string>
+    <string name="board_size_slider_content_description">Board size</string>
     <string name="board_preview_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d board preview</string>
 </resources>

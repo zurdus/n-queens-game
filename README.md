@@ -32,6 +32,7 @@ An Android puzzle game based on the N-Queens problem. Players choose a board siz
 - `com.zurdus.nqueens.feature.boardsize.navigation`: typed destinations and nested feature graph
 - `com.zurdus.nqueens.feature.boardsize.di`: board-size Koin module
 - `com.zurdus.nqueens.feature.game.presentation`: game screen state, ViewModel, and Compose UI
+- `com.zurdus.nqueens.feature.game.domain`: N-Queens game models and user-recognizable operations
 - `com.zurdus.nqueens.feature.game.navigation`: typed game destination and nested feature graph
 - `com.zurdus.nqueens.feature.game.di`: game Koin module
 - `com.zurdus.nqueens.ui.component`: shared Compose components with multiple feature consumers

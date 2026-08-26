@@ -12,6 +12,9 @@
     <string name="game_back">‹ Boards</string>
     <string name="game_your_progress">Your progress</string>
     <string name="game_progress">%1$d / %2$d queens</string>
+    <string name="game_undo">Undo</string>
+    <string name="game_reset">Reset board</string>
+    <string name="game_play_again">Play again</string>
     <string name="game_status_ready_title">Your move</string>
     <string name="game_status_ready_message" tools:ignore="PluralsCandidate">Tap any square to place the first of %1$d queens.</string>
     <string name="game_status_safe_title">Safe so far</string>

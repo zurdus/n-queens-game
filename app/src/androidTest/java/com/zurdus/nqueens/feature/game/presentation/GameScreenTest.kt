@@ -86,7 +86,7 @@ class GameScreenTest {
     }
 
     @Test
-    fun placingConflictingQueensUpdatesProgressAndStatus() {
+    fun placingConflictingQueensUpdatesProgressAndUndoResetControls() {
         startGame()
 
         clickCell(row = 0, column = 0)
@@ -97,6 +97,16 @@ class GameScreenTest {
         composeRule
             .onAllNodesWithText(composeRule.activity.getString(R.string.game_status_conflict_title))
             .assertCountEquals(1)
+
+        composeRule.onNodeWithTag(GAME_UNDO_TEST_TAG).performClick()
+        composeRule
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .assertTextEquals(gameProgress(placed = 1, boardSize = 8))
+
+        composeRule.onNodeWithTag(GAME_RESET_TEST_TAG).performClick()
+        composeRule
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .assertTextEquals(gameProgress(placed = 0, boardSize = 8))
     }
 
     private fun selectBoardSize(size: Int) {

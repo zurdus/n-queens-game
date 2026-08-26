@@ -8,4 +8,5 @@ internal data class GameUiState(
     val conflictingQueens: Set<BoardPosition> = emptySet(),
     val queensLeft: Int = boardSize,
     val isSolved: Boolean = false,
+    val canUndo: Boolean = false,
 )

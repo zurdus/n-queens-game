@@ -54,6 +54,33 @@ class GameViewModelTest {
         assertFalse(BoardPosition(row = 1, column = 0) in viewModel.uiState.value.queens)
     }
 
+    @Test
+    fun `undo restores the game before the last placement change`() {
+        val viewModel = createViewModel(boardSize = 4)
+        val firstQueen = BoardPosition(row = 0, column = 1)
+        val secondQueen = BoardPosition(row = 1, column = 3)
+        viewModel.onCellClicked(firstQueen.row, firstQueen.column)
+        viewModel.onCellClicked(secondQueen.row, secondQueen.column)
+
+        viewModel.onUndoClicked()
+
+        assertEquals(setOf(firstQueen), viewModel.uiState.value.queens)
+        assertTrue(viewModel.uiState.value.canUndo)
+    }
+
+    @Test
+    fun `reset clears placements and undo history`() {
+        val viewModel = createViewModel(boardSize = 4)
+        viewModel.onCellClicked(row = 0, column = 1)
+        viewModel.onCellClicked(row = 1, column = 3)
+
+        viewModel.onResetClicked()
+
+        assertTrue(viewModel.uiState.value.queens.isEmpty())
+        assertEquals(4, viewModel.uiState.value.queensLeft)
+        assertFalse(viewModel.uiState.value.canUndo)
+    }
+
     private fun createViewModel(boardSize: Int): GameViewModel = GameViewModel(
         boardSize = boardSize,
         changeQueenPlacement = ChangeQueenPlacement(),

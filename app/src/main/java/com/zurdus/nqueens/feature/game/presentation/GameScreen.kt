@@ -22,8 +22,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -68,6 +70,8 @@ internal fun GameScreen(
         state = state,
         onNavigateBack = onNavigateBack,
         onCellClick = viewModel::onCellClicked,
+        onUndoClick = viewModel::onUndoClicked,
+        onResetClick = viewModel::onResetClicked,
     )
 }
 
@@ -76,6 +80,8 @@ private fun GameScreen(
     state: GameUiState,
     onNavigateBack: () -> Unit,
     onCellClick: (row: Int, column: Int) -> Unit,
+    onUndoClick: () -> Unit,
+    onResetClick: () -> Unit,
 ) {
     val layout = currentWindowAdaptiveInfoV2()
         .windowSizeClass
@@ -86,6 +92,15 @@ private fun GameScreen(
             GameTopBar(
                 boardSize = state.boardSize,
                 onNavigateBack = onNavigateBack,
+            )
+        },
+        bottomBar = {
+            GameBottomBar(
+                hasQueens = state.queens.isNotEmpty(),
+                canUndo = state.canUndo,
+                isSolved = state.isSolved,
+                onUndoClick = onUndoClick,
+                onResetClick = onResetClick,
             )
         },
     ) { contentPadding ->
@@ -446,6 +461,64 @@ private fun gameStatus(state: GameUiState): GameStatus = when {
     )
 }
 
+@Composable
+private fun GameBottomBar(
+    hasQueens: Boolean,
+    canUndo: Boolean,
+    isSolved: Boolean,
+    onUndoClick: () -> Unit,
+    onResetClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.background,
+        tonalElevation = 4.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    ),
+                )
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            Row(
+                modifier = Modifier
+                    .widthIn(max = MAX_CONTROLS_WIDTH)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                OutlinedButton(
+                    onClick = onUndoClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(GAME_UNDO_TEST_TAG),
+                    enabled = canUndo,
+                ) {
+                    Text(text = stringResource(R.string.game_undo))
+                }
+                FilledTonalButton(
+                    onClick = onResetClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(GAME_RESET_TEST_TAG),
+                    enabled = hasQueens,
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (isSolved) R.string.game_play_again else R.string.game_reset,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
 @NQueensPreviews
 @Composable
 private fun GameScreenPreview() {
@@ -461,6 +534,8 @@ private fun GameScreenPreview() {
             ),
             onNavigateBack = {},
             onCellClick = { _, _ -> },
+            onUndoClick = {},
+            onResetClick = {},
         )
     }
 }
@@ -491,6 +566,9 @@ internal const val GAME_CHESS_BOARD_TEST_TAG = "game_chess_board"
 internal const val GAME_CONTENT_TEST_TAG = "game_content"
 internal const val GAME_INSTRUCTION_TEST_TAG = "game_instruction"
 internal const val GAME_PROGRESS_TEST_TAG = "game_progress"
+internal const val GAME_RESET_TEST_TAG = "game_reset"
 internal const val GAME_STATUS_TEST_TAG = "game_status"
+internal const val GAME_UNDO_TEST_TAG = "game_undo"
 
 private val MAX_BOARD_WIDTH = 560.dp
+private val MAX_CONTROLS_WIDTH = 560.dp

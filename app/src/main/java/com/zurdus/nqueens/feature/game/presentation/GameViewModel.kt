@@ -16,6 +16,7 @@ internal class GameViewModel(
     private var game = NQueensGame(boardSize = boardSize)
     private val _uiState = MutableStateFlow(game.toUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
+    private val gameHistory = ArrayDeque<NQueensGame>()
 
     fun onCellClicked(row: Int, column: Int) {
         val updatedGame = changeQueenPlacement(
@@ -24,15 +25,32 @@ internal class GameViewModel(
         )
         if (updatedGame == game) return
 
+        gameHistory.addLast(game)
         game = updatedGame
-        _uiState.value = updatedGame.toUiState()
+        _uiState.value = updatedGame.toUiState(canUndo = true)
+    }
+
+    fun onUndoClicked() {
+        if (gameHistory.isEmpty()) return
+
+        game = gameHistory.removeLast()
+        _uiState.value = game.toUiState(canUndo = gameHistory.isNotEmpty())
+    }
+
+    fun onResetClicked() {
+        if (game.queens.isEmpty()) return
+
+        gameHistory.clear()
+        game = NQueensGame(boardSize = game.boardSize)
+        _uiState.value = game.toUiState()
     }
 }
 
-private fun NQueensGame.toUiState(): GameUiState = GameUiState(
+private fun NQueensGame.toUiState(canUndo: Boolean = false): GameUiState = GameUiState(
     boardSize = boardSize,
     queens = queens,
     conflictingQueens = conflictingQueens,
     queensLeft = queensLeft,
     isSolved = isSolved,
+    canUndo = canUndo,
 )

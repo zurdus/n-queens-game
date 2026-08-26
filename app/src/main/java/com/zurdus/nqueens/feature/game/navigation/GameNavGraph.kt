@@ -22,6 +22,7 @@ internal fun NavGraphBuilder.gameNavGraph(
 
             GameScreen(
                 boardSize = destination.boardSize,
+                onNavigateBack = navController::navigateUp,
             )
         }
     }

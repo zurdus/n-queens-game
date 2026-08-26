@@ -1,22 +1,51 @@
 package com.zurdus.nqueens.feature.game.presentation
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.zurdus.nqueens.R
 import com.zurdus.nqueens.feature.game.domain.model.BoardPosition
 import com.zurdus.nqueens.ui.component.ChessBoard
@@ -28,6 +57,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 internal fun GameScreen(
     boardSize: Int,
+    onNavigateBack: () -> Unit,
     viewModel: GameViewModel = koinViewModel(
         parameters = { parametersOf(boardSize) },
     ),
@@ -36,6 +66,7 @@ internal fun GameScreen(
 
     GameScreen(
         state = state,
+        onNavigateBack = onNavigateBack,
         onCellClick = viewModel::onCellClicked,
     )
 }
@@ -43,11 +74,24 @@ internal fun GameScreen(
 @Composable
 private fun GameScreen(
     state: GameUiState,
+    onNavigateBack: () -> Unit,
     onCellClick: (row: Int, column: Int) -> Unit,
 ) {
-    Scaffold { contentPadding ->
+    val layout = currentWindowAdaptiveInfoV2()
+        .windowSizeClass
+        .toGameLayout()
+
+    Scaffold(
+        topBar = {
+            GameTopBar(
+                boardSize = state.boardSize,
+                onNavigateBack = onNavigateBack,
+            )
+        },
+    ) { contentPadding ->
         GameScreenContent(
             state = state,
+            layout = layout,
             onCellClick = onCellClick,
             modifier = Modifier.padding(contentPadding),
         )
@@ -55,70 +99,351 @@ private fun GameScreen(
 }
 
 @Composable
+private fun GameTopBar(
+    boardSize: Int,
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.background,
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+                    ),
+                )
+                .height(64.dp)
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TextButton(
+                onClick = onNavigateBack,
+                modifier = Modifier.testTag(GAME_BACK_TEST_TAG),
+            ) {
+                Text(text = stringResource(R.string.game_back))
+            }
+
+            Text(
+                text = stringResource(R.string.game_title),
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { heading() },
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                shape = CircleShape,
+            ) {
+                Text(
+                    text = stringResource(
+                        R.string.board_size_dimension,
+                        boardSize,
+                        boardSize,
+                    ),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun GameScreenContent(
+    state: GameUiState,
+    layout: GameLayout,
+    onCellClick: (row: Int, column: Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    when (layout) {
+        GameLayout.VERTICAL -> GameVerticalLayout(
+            state = state,
+            onCellClick = onCellClick,
+            modifier = modifier,
+        )
+        GameLayout.HORIZONTAL -> GameHorizontalLayout(
+            state = state,
+            onCellClick = onCellClick,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun GameVerticalLayout(
     state: GameUiState,
     onCellClick: (row: Int, column: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Layout(
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .testTag(GAME_CONTENT_TEST_TAG),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        GameProgressCard(
+            state = state,
+            modifier = Modifier
+                .widthIn(max = MAX_BOARD_WIDTH)
+                .fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        GameBoard(
+            state = state,
+            onCellClick = onCellClick,
+            modifier = Modifier
+                .widthIn(max = MAX_BOARD_WIDTH)
+                .fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        GameStatusBanner(
+            state = state,
+            modifier = Modifier
+                .widthIn(max = MAX_BOARD_WIDTH)
+                .fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun GameHorizontalLayout(
+    state: GameUiState,
+    onCellClick: (row: Int, column: Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
         modifier = modifier
             .fillMaxSize()
             .padding(24.dp)
             .testTag(GAME_CONTENT_TEST_TAG),
-        content = {
+        horizontalArrangement = Arrangement.spacedBy(32.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            contentAlignment = Alignment.Center,
+        ) {
+            val boardDimension = minOf(maxWidth, maxHeight, MAX_BOARD_WIDTH)
+            GameBoard(
+                state = state,
+                onCellClick = onCellClick,
+                modifier = Modifier.size(boardDimension),
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .weight(0.72f)
+                .fillMaxHeight(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 380.dp)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                GameProgressCard(
+                    state = state,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                GameStatusBanner(
+                    state = state,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GameProgressCard(
+    state: GameUiState,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.game_your_progress),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.game_progress,
+                        state.queens.size,
+                        state.boardSize,
+                    ),
+                    modifier = Modifier.testTag(GAME_PROGRESS_TEST_TAG),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            LinearProgressIndicator(
+                progress = { state.queens.size.toFloat() / state.boardSize },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = if (state.conflictingQueens.isEmpty()) {
+                    MaterialTheme.colorScheme.tertiary
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
+                trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                drawStopIndicator = {},
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
                 text = stringResource(
                     R.string.game_instruction,
                     state.boardSize,
                 ),
-                modifier = Modifier
-                    .widthIn(max = 560.dp)
-                    .fillMaxWidth()
-                    .testTag(GAME_INSTRUCTION_TEST_TAG),
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
+                modifier = Modifier.testTag(GAME_INSTRUCTION_TEST_TAG),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
             )
-
-            ChessBoard(
-                boardSize = state.boardSize,
-                contentDescription = stringResource(
-                    R.string.game_board_content_description,
-                    state.boardSize,
-                    state.boardSize,
-                ),
-                modifier = Modifier.testTag(GAME_CHESS_BOARD_TEST_TAG),
-                isQueenAt = { row, column ->
-                    BoardPosition(row, column) in state.queens
-                },
-                isConflictingAt = { row, column ->
-                    BoardPosition(row, column) in state.conflictingQueens
-                },
-                onCellClick = onCellClick,
-            )
-        },
-    ) { measurables, constraints ->
-        val instruction = measurables[0].measure(
-            constraints.copy(minWidth = 0, minHeight = 0),
-        )
-        val instructionSpacing = 16.dp.roundToPx()
-        val boardDimension = minOf(
-            constraints.maxWidth,
-            constraints.maxHeight - 2 * (instruction.height + instructionSpacing),
-            560.dp.roundToPx(),
-        ).coerceAtLeast(0)
-        val board = measurables[1].measure(
-            Constraints.fixed(boardDimension, boardDimension),
-        )
-        val boardX = (constraints.maxWidth - board.width) / 2
-        val boardY = (constraints.maxHeight - board.height) / 2
-        val instructionX = (constraints.maxWidth - instruction.width) / 2
-        val instructionY = boardY - instructionSpacing - instruction.height
-
-        layout(constraints.maxWidth, constraints.maxHeight) {
-            instruction.placeRelative(instructionX, instructionY)
-            board.placeRelative(boardX, boardY)
         }
     }
+}
+
+@Composable
+private fun GameBoard(
+    state: GameUiState,
+    onCellClick: (row: Int, column: Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val queens = state.queens.toSet()
+    val conflictingQueens = state.conflictingQueens
+
+    ChessBoard(
+        boardSize = state.boardSize,
+        contentDescription = stringResource(
+            R.string.game_board_content_description,
+            state.boardSize,
+            state.boardSize,
+        ),
+        modifier = modifier.testTag(GAME_CHESS_BOARD_TEST_TAG),
+        isQueenAt = { row, column -> BoardPosition(row, column) in queens },
+        isConflictingAt = { row, column -> BoardPosition(row, column) in conflictingQueens },
+        onCellClick = onCellClick,
+    )
+}
+
+@Composable
+private fun GameStatusBanner(
+    state: GameUiState,
+    modifier: Modifier = Modifier,
+) {
+    val status = gameStatus(state)
+
+    Surface(
+        modifier = modifier
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .testTag(GAME_STATUS_TEST_TAG),
+        color = status.containerColor,
+        contentColor = status.contentColor,
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Surface(
+                modifier = Modifier.size(32.dp),
+                color = status.contentColor.copy(alpha = 0.12f),
+                contentColor = status.contentColor,
+                shape = CircleShape,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = status.symbol,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            Column {
+                Text(
+                    text = stringResource(status.title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = stringResource(status.message, status.messageArgument),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun gameStatus(state: GameUiState): GameStatus = when {
+    state.isSolved -> GameStatus(
+        symbol = "✓",
+        title = R.string.game_status_solved_title,
+        message = R.string.game_status_solved_message,
+        messageArgument = state.boardSize,
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+    )
+    state.conflictingQueens.isNotEmpty() -> GameStatus(
+        symbol = "!",
+        title = R.string.game_status_conflict_title,
+        message = R.string.game_status_conflict_message,
+        messageArgument = state.conflictingQueens.size,
+        containerColor = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+    )
+    state.queens.isEmpty() -> GameStatus(
+        symbol = "♛",
+        title = R.string.game_status_ready_title,
+        message = R.string.game_status_ready_message,
+        messageArgument = state.boardSize,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
+    else -> GameStatus(
+        symbol = "✓",
+        title = R.string.game_status_safe_title,
+        message = R.string.game_status_safe_message,
+        messageArgument = state.boardSize - state.queens.size,
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+    )
 }
 
 @NQueensPreviews
@@ -126,12 +451,46 @@ private fun GameScreenContent(
 private fun GameScreenPreview() {
     NQueensPreview {
         GameScreen(
-            state = GameUiState(boardSize = 8),
+            state = GameUiState(
+                boardSize = 8,
+                queens = setOf(
+                    BoardPosition(0, 0),
+                    BoardPosition(2, 3),
+                    BoardPosition(5, 6),
+                ),
+            ),
+            onNavigateBack = {},
             onCellClick = { _, _ -> },
         )
     }
 }
 
+private fun WindowSizeClass.toGameLayout(): GameLayout =
+    if (isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)) {
+        GameLayout.HORIZONTAL
+    } else {
+        GameLayout.VERTICAL
+    }
+
+private data class GameStatus(
+    val symbol: String,
+    val title: Int,
+    val message: Int,
+    val messageArgument: Int,
+    val containerColor: Color,
+    val contentColor: Color,
+)
+
+private enum class GameLayout {
+    VERTICAL,
+    HORIZONTAL,
+}
+
+internal const val GAME_BACK_TEST_TAG = "game_back"
 internal const val GAME_CHESS_BOARD_TEST_TAG = "game_chess_board"
 internal const val GAME_CONTENT_TEST_TAG = "game_content"
 internal const val GAME_INSTRUCTION_TEST_TAG = "game_instruction"
+internal const val GAME_PROGRESS_TEST_TAG = "game_progress"
+internal const val GAME_STATUS_TEST_TAG = "game_status"
+
+private val MAX_BOARD_WIDTH = 560.dp

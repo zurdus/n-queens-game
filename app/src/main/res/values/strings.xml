@@ -8,6 +8,18 @@
     <string name="board_preview_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d board preview</string>
     <string name="game_instruction" tools:ignore="PluralsCandidate">Place %1$d queens so that none threaten each other.</string>
     <string name="game_board_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d game board</string>
+    <string name="game_title">N Queens</string>
+    <string name="game_back">‹ Boards</string>
+    <string name="game_your_progress">Your progress</string>
+    <string name="game_progress">%1$d / %2$d queens</string>
+    <string name="game_status_ready_title">Your move</string>
+    <string name="game_status_ready_message" tools:ignore="PluralsCandidate">Tap any square to place the first of %1$d queens.</string>
+    <string name="game_status_safe_title">Safe so far</string>
+    <string name="game_status_safe_message" tools:ignore="PluralsCandidate">%1$d queens left to place. Keep going!</string>
+    <string name="game_status_conflict_title">Queens are attacking</string>
+    <string name="game_status_conflict_message" tools:ignore="PluralsCandidate">Move one of the %1$d queens marked in red.</string>
+    <string name="game_status_solved_title">Brilliant — puzzle solved!</string>
+    <string name="game_status_solved_message" tools:ignore="PluralsCandidate">All %1$d queens are safe.</string>
     <string name="game_cell_empty_content_description">Row %1$d, column %2$d, empty</string>
     <string name="game_cell_queen_content_description">Row %1$d, column %2$d, queen</string>
     <string name="game_cell_conflict_content_description">Row %1$d, column %2$d, conflicting queen</string>

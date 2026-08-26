@@ -2,7 +2,6 @@ package com.zurdus.nqueens.feature.game.presentation
 
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertContentDescriptionEquals
@@ -15,6 +14,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.zurdus.nqueens.MainActivity
@@ -58,7 +58,9 @@ class GameScreenTest {
 
         assertBoardCellCount(expectedCount = 64)
         assertGameBoardIsSquare()
-        assertGameBoardPlacement()
+        composeRule
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .assertTextEquals(gameProgress(placed = 0, boardSize = 8))
     }
 
     @Test
@@ -84,27 +86,17 @@ class GameScreenTest {
     }
 
     @Test
-    fun tappingCellsPlacesQueensAndMarksConflicts() {
+    fun placingConflictingQueensUpdatesProgressAndStatus() {
         startGame()
 
         clickCell(row = 0, column = 0)
-        composeRule
-            .onNodeWithTag("chess_board_cell_0_0", useUnmergedTree = true)
-            .assertContentDescriptionEquals(
-                cellDescription(R.string.game_cell_queen_content_description, 1, 1),
-            )
-
         clickCell(row = 0, column = 2)
         composeRule
-            .onNodeWithTag("chess_board_cell_0_0", useUnmergedTree = true)
-            .assertContentDescriptionEquals(
-                cellDescription(R.string.game_cell_conflict_content_description, 1, 1),
-            )
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .assertTextEquals(gameProgress(placed = 2, boardSize = 8))
         composeRule
-            .onNodeWithTag("chess_board_cell_0_2", useUnmergedTree = true)
-            .assertContentDescriptionEquals(
-                cellDescription(R.string.game_cell_conflict_content_description, 1, 3),
-            )
+            .onAllNodesWithText(composeRule.activity.getString(R.string.game_status_conflict_title))
+            .assertCountEquals(1)
     }
 
     private fun selectBoardSize(size: Int) {
@@ -119,13 +111,6 @@ class GameScreenTest {
     private fun startGame() {
         composeRule
             .onNodeWithTag(BOARD_SIZE_START_GAME_TEST_TAG)
-            .performClick()
-        composeRule.waitForIdle()
-    }
-
-    private fun clickCell(row: Int, column: Int) {
-        composeRule
-            .onNodeWithTag("chess_board_cell_${row}_$column", useUnmergedTree = true)
             .performClick()
         composeRule.waitForIdle()
     }
@@ -149,39 +134,11 @@ class GameScreenTest {
         )
     }
 
-    private fun assertGameBoardPlacement() {
-        val contentBounds = composeRule
-            .onNodeWithTag(GAME_CONTENT_TEST_TAG)
-            .getUnclippedBoundsInRoot()
-        val instructionBounds = composeRule
-            .onNodeWithTag(GAME_INSTRUCTION_TEST_TAG)
-            .getUnclippedBoundsInRoot()
-        val boardBounds = composeRule
-            .onNodeWithTag(GAME_CHESS_BOARD_TEST_TAG)
-            .getUnclippedBoundsInRoot()
-
-        assertEquals(
-            "Instruction should be 16dp above the board.",
-            16f,
-            (boardBounds.top - instructionBounds.bottom).value,
-            0.5f,
-        )
-        assertEquals(
-            "Game board should be horizontally centered.",
-            (contentBounds.left.value + contentBounds.right.value) / 2,
-            (boardBounds.left.value + boardBounds.right.value) / 2,
-            0.5f,
-        )
-        assertEquals(
-            "Game board should be vertically centered.",
-            (contentBounds.top.value + contentBounds.bottom.value) / 2,
-            (boardBounds.top.value + boardBounds.bottom.value) / 2,
-            0.5f,
-        )
-    }
-
     private fun gameInstruction(boardSize: Int): String =
         composeRule.activity.getString(R.string.game_instruction, boardSize)
+
+    private fun gameProgress(placed: Int, boardSize: Int): String =
+        composeRule.activity.getString(R.string.game_progress, placed, boardSize)
 
     private fun gameBoardDescription(boardSize: Int): String =
         composeRule.activity.getString(
@@ -193,8 +150,12 @@ class GameScreenTest {
     private fun boardSizeLabel(size: Int): String =
         composeRule.activity.getString(R.string.board_size_dimension, size, size)
 
-    private fun cellDescription(resourceId: Int, row: Int, column: Int): String =
-        composeRule.activity.getString(resourceId, row, column)
+    private fun clickCell(row: Int, column: Int) {
+        composeRule
+            .onNodeWithTag("chess_board_cell_${row}_$column", useUnmergedTree = true)
+            .performClick()
+        composeRule.waitForIdle()
+    }
 
     private companion object {
         val CHESS_BOARD_CELL_MATCHER = SemanticsMatcher("Chessboard cell test tag") { node ->

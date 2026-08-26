@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zurdus.nqueens.R
+import com.zurdus.nqueens.feature.game.domain.model.BoardPosition
 import com.zurdus.nqueens.ui.component.ChessBoard
 import com.zurdus.nqueens.ui.preview.NQueensPreview
 import com.zurdus.nqueens.ui.preview.NQueensPreviews
@@ -33,16 +34,21 @@ internal fun GameScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    GameScreen(state = state)
+    GameScreen(
+        state = state,
+        onCellClick = viewModel::onCellClicked,
+    )
 }
 
 @Composable
 private fun GameScreen(
     state: GameUiState,
+    onCellClick: (row: Int, column: Int) -> Unit,
 ) {
     Scaffold { contentPadding ->
         GameScreenContent(
             state = state,
+            onCellClick = onCellClick,
             modifier = Modifier.padding(contentPadding),
         )
     }
@@ -51,6 +57,7 @@ private fun GameScreen(
 @Composable
 private fun GameScreenContent(
     state: GameUiState,
+    onCellClick: (row: Int, column: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Layout(
@@ -80,6 +87,13 @@ private fun GameScreenContent(
                     state.boardSize,
                 ),
                 modifier = Modifier.testTag(GAME_CHESS_BOARD_TEST_TAG),
+                isQueenAt = { row, column ->
+                    BoardPosition(row, column) in state.queens
+                },
+                isConflictingAt = { row, column ->
+                    BoardPosition(row, column) in state.conflictingQueens
+                },
+                onCellClick = onCellClick,
             )
         },
     ) { measurables, constraints ->
@@ -113,6 +127,7 @@ private fun GameScreenPreview() {
     NQueensPreview {
         GameScreen(
             state = GameUiState(boardSize = 8),
+            onCellClick = { _, _ -> },
         )
     }
 }

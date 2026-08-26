@@ -83,6 +83,30 @@ class GameScreenTest {
         assertBoardCellCount(expectedCount = 16)
     }
 
+    @Test
+    fun tappingCellsPlacesQueensAndMarksConflicts() {
+        startGame()
+
+        clickCell(row = 0, column = 0)
+        composeRule
+            .onNodeWithTag("chess_board_cell_0_0", useUnmergedTree = true)
+            .assertContentDescriptionEquals(
+                cellDescription(R.string.game_cell_queen_content_description, 1, 1),
+            )
+
+        clickCell(row = 0, column = 2)
+        composeRule
+            .onNodeWithTag("chess_board_cell_0_0", useUnmergedTree = true)
+            .assertContentDescriptionEquals(
+                cellDescription(R.string.game_cell_conflict_content_description, 1, 1),
+            )
+        composeRule
+            .onNodeWithTag("chess_board_cell_0_2", useUnmergedTree = true)
+            .assertContentDescriptionEquals(
+                cellDescription(R.string.game_cell_conflict_content_description, 1, 3),
+            )
+    }
+
     private fun selectBoardSize(size: Int) {
         composeRule
             .onNodeWithTag(BOARD_SIZE_SLIDER_TEST_TAG)
@@ -95,6 +119,13 @@ class GameScreenTest {
     private fun startGame() {
         composeRule
             .onNodeWithTag(BOARD_SIZE_START_GAME_TEST_TAG)
+            .performClick()
+        composeRule.waitForIdle()
+    }
+
+    private fun clickCell(row: Int, column: Int) {
+        composeRule
+            .onNodeWithTag("chess_board_cell_${row}_$column", useUnmergedTree = true)
             .performClick()
         composeRule.waitForIdle()
     }
@@ -161,6 +192,9 @@ class GameScreenTest {
 
     private fun boardSizeLabel(size: Int): String =
         composeRule.activity.getString(R.string.board_size_dimension, size, size)
+
+    private fun cellDescription(resourceId: Int, row: Int, column: Int): String =
+        composeRule.activity.getString(resourceId, row, column)
 
     private companion object {
         val CHESS_BOARD_CELL_MATCHER = SemanticsMatcher("Chessboard cell test tag") { node ->

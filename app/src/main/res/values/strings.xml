@@ -8,4 +8,7 @@
     <string name="board_preview_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d board preview</string>
     <string name="game_instruction" tools:ignore="PluralsCandidate">Place %1$d queens so that none threaten each other.</string>
     <string name="game_board_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d game board</string>
+    <string name="game_cell_empty_content_description">Row %1$d, column %2$d, empty</string>
+    <string name="game_cell_queen_content_description">Row %1$d, column %2$d, queen</string>
+    <string name="game_cell_conflict_content_description">Row %1$d, column %2$d, conflicting queen</string>
 </resources>

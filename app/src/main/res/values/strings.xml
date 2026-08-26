@@ -4,5 +4,8 @@
     <string name="board_size_title">Choose your board size</string>
     <string name="board_size_dimension">%1$d × %2$d</string>
     <string name="board_size_slider_content_description">Board size</string>
+    <string name="board_size_start_game">Start game</string>
     <string name="board_preview_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d board preview</string>
+    <string name="game_instruction" tools:ignore="PluralsCandidate">Place %1$d queens so that none threaten each other.</string>
+    <string name="game_board_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d game board</string>
 </resources>

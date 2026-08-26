@@ -1,11 +1,11 @@
-package com.zurdus.nqueens.feature.boardsize.presentation.component
+package com.zurdus.nqueens.ui.component
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class BoardPreviewTest {
+class ChessBoardTest {
 
     @Test
     fun `top-left square is light`() {

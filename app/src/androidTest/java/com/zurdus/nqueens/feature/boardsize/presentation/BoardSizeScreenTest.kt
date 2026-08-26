@@ -15,11 +15,12 @@ import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.zurdus.nqueens.MainActivity
 import com.zurdus.nqueens.R
-import com.zurdus.nqueens.feature.boardsize.presentation.component.BOARD_PREVIEW_TEST_TAG
+import com.zurdus.nqueens.feature.boardsize.presentation.component.CHESS_BOARD_PREVIEW_TEST_TAG
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -64,18 +65,22 @@ class BoardSizeScreenTest {
                 activity.getString(R.string.board_size_slider_content_description),
             )
         composeRule
-            .onNodeWithTag(BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
             .assertContentDescriptionEquals(boardDescription(8))
+        composeRule
+            .onNodeWithTag(BOARD_SIZE_START_GAME_TEST_TAG)
+            .assertIsDisplayed()
 
         assertBoardCellCount(64)
         assertBoardIsSquare()
         assertSelectedValueIsBelowBoard()
+        assertStartGameIsPinnedToBottom()
 
         val sliderBounds = composeRule
             .onNodeWithTag(BOARD_SIZE_SLIDER_TEST_TAG)
             .getUnclippedBoundsInRoot()
         val boardBounds = composeRule
-            .onNodeWithTag(BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
             .getUnclippedBoundsInRoot()
 
         assertTrue(
@@ -92,7 +97,7 @@ class BoardSizeScreenTest {
             .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
             .assertTextEquals(boardSizeLabel(4))
         composeRule
-            .onNodeWithTag(BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
             .assertContentDescriptionEquals(boardDescription(4))
         assertBoardCellCount(16)
     }
@@ -105,7 +110,7 @@ class BoardSizeScreenTest {
             .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
             .assertTextEquals(boardSizeLabel(12))
         composeRule
-            .onNodeWithTag(BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
             .assertContentDescriptionEquals(boardDescription(12))
         assertBoardCellCount(144)
     }
@@ -122,7 +127,7 @@ class BoardSizeScreenTest {
             .assertIsDisplayed()
             .getUnclippedBoundsInRoot()
         val boardBounds = composeRule
-            .onNodeWithTag(BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
             .assertIsDisplayed()
             .getUnclippedBoundsInRoot()
 
@@ -130,8 +135,14 @@ class BoardSizeScreenTest {
             "Horizontal layout should place the board beside the controls.",
             boardBounds.left >= sliderBounds.right,
         )
+        assertTrue(
+            "Controls should respect their maximum width.",
+            (sliderBounds.right - sliderBounds.left).value <= 360.5f,
+        )
         assertBoardIsSquare()
         assertSelectedValueIsBelowBoard()
+        assertStartGameIsPinnedToBottom()
+        assertBoardGroupIsNearBottomAction()
     }
 
     private fun selectBoardSize(size: Int) {
@@ -151,7 +162,7 @@ class BoardSizeScreenTest {
 
     private fun assertBoardIsSquare() {
         val boardBounds = composeRule
-            .onNodeWithTag(BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
             .getUnclippedBoundsInRoot()
 
         assertEquals(
@@ -164,7 +175,7 @@ class BoardSizeScreenTest {
 
     private fun assertSelectedValueIsBelowBoard() {
         val boardBounds = composeRule
-            .onNodeWithTag(BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
             .getUnclippedBoundsInRoot()
         val selectedValueBounds = composeRule
             .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
@@ -173,6 +184,45 @@ class BoardSizeScreenTest {
         assertTrue(
             "Selected value should be below the board.",
             selectedValueBounds.top >= boardBounds.bottom,
+        )
+    }
+
+    private fun assertStartGameIsPinnedToBottom() {
+        val selectedValueBounds = composeRule
+            .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+        val buttonBounds = composeRule
+            .onNodeWithTag(BOARD_SIZE_START_GAME_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+        val rootBounds = composeRule
+            .onRoot()
+            .getUnclippedBoundsInRoot()
+
+        assertTrue(
+            "Start Game should be below the selector content.",
+            buttonBounds.top >= selectedValueBounds.bottom,
+        )
+        assertTrue(
+            "Start Game should stay inside the bottom safe bounds.",
+            buttonBounds.bottom <= rootBounds.bottom,
+        )
+        assertTrue(
+            "Start Game should respect its maximum width.",
+            (buttonBounds.right - buttonBounds.left).value <= 360.5f,
+        )
+    }
+
+    private fun assertBoardGroupIsNearBottomAction() {
+        val selectedValueBounds = composeRule
+            .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+        val buttonBounds = composeRule
+            .onNodeWithTag(BOARD_SIZE_START_GAME_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+
+        assertTrue(
+            "Horizontal board content should sit near the bottom action.",
+            (buttonBounds.top - selectedValueBounds.bottom).value <= 48.5f,
         )
     }
 
@@ -200,7 +250,7 @@ class BoardSizeScreenTest {
     private companion object {
         val BOARD_CELL_MATCHER = SemanticsMatcher("Board cell test tag") { node ->
             SemanticsProperties.TestTag in node.config &&
-                node.config[SemanticsProperties.TestTag].startsWith("board_cell_")
+                node.config[SemanticsProperties.TestTag].startsWith("chess_board_cell_")
         }
     }
 }

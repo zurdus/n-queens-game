@@ -6,18 +6,25 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
@@ -34,12 +41,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.zurdus.nqueens.R
-import com.zurdus.nqueens.feature.boardsize.presentation.component.BoardPreview
+import com.zurdus.nqueens.feature.boardsize.presentation.component.ChessBoardPreview
 import com.zurdus.nqueens.ui.preview.NQueensPreview
 import com.zurdus.nqueens.ui.preview.NQueensPreviews
 import org.koin.compose.viewmodel.koinViewModel
@@ -47,6 +55,7 @@ import kotlin.math.roundToInt
 
 @Composable
 internal fun BoardSizeScreen(
+    onStartGame: (Int) -> Unit,
     viewModel: BoardSizeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -54,6 +63,7 @@ internal fun BoardSizeScreen(
     BoardSizeScreen(
         state = state,
         onBoardSizeChanged = viewModel::onBoardSizeChanged,
+        onStartGame = onStartGame,
     )
 }
 
@@ -61,12 +71,21 @@ internal fun BoardSizeScreen(
 private fun BoardSizeScreen(
     state: BoardSizeUiState,
     onBoardSizeChanged: (Int) -> Unit,
+    onStartGame: (Int) -> Unit,
 ) {
     val layout = currentWindowAdaptiveInfoV2()
         .windowSizeClass
         .toBoardSizeLayout()
 
-    Scaffold { contentPadding ->
+    Scaffold(
+        bottomBar = {
+            BoardSizeBottomBar(
+                onStartGame = dropUnlessResumed {
+                    onStartGame(state.selectedSize)
+                },
+            )
+        },
+    ) { contentPadding ->
         BoardSizeScreenContent(
             state = state,
             onBoardSizeChanged = onBoardSizeChanged,
@@ -129,17 +148,17 @@ private fun BoardSizeVerticalLayout(
                 state = state,
                 onBoardSizeChanged = onBoardSizeChanged,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = MAX_CONTROLS_WIDTH),
+                    .widthIn(max = MAX_CONTROLS_WIDTH)
+                    .fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            BoardPreview(
+            ChessBoardPreview(
                 boardSize = state.selectedSize,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = boardMaxWidth),
+                    .widthIn(max = boardMaxWidth)
+                    .fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -172,8 +191,8 @@ private fun BoardSizeHorizontalLayout(
                 state = state,
                 onBoardSizeChanged = onBoardSizeChanged,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .widthIn(max = MAX_CONTROLS_WIDTH)
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
             )
         }
@@ -182,7 +201,6 @@ private fun BoardSizeHorizontalLayout(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
-            contentAlignment = Alignment.Center,
         ) {
             val selectedValueHeight = with(LocalDensity.current) {
                 MaterialTheme.typography.displaySmall.lineHeight.toDp()
@@ -197,7 +215,7 @@ private fun BoardSizeHorizontalLayout(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                BoardPreview(
+                ChessBoardPreview(
                     boardSize = state.selectedSize,
                     modifier = Modifier.size(boardDimension),
                 )
@@ -205,6 +223,39 @@ private fun BoardSizeHorizontalLayout(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 BoardSizeSelectedValue(selectedSize = state.selectedSize)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoardSizeBottomBar(
+    onStartGame: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    ),
+                )
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Button(
+                onClick = onStartGame,
+                modifier = Modifier
+                    .widthIn(max = MAX_CONTROLS_WIDTH)
+                    .fillMaxWidth()
+                    .testTag(BOARD_SIZE_START_GAME_TEST_TAG),
+            ) {
+                Text(text = stringResource(R.string.board_size_start_game))
             }
         }
     }
@@ -223,7 +274,7 @@ private fun BoardSizeSelectedValue(
         ),
         modifier = modifier.testTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG),
         color = MaterialTheme.colorScheme.primary,
-        style = MaterialTheme.typography.displaySmall,
+        style = MaterialTheme.typography.headlineSmall,
     )
 }
 
@@ -256,7 +307,7 @@ private fun BoardSizeControls(
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Slider(
             value = state.selectedSize.toFloat(),
@@ -294,6 +345,7 @@ private fun BoardSizeScreenPreview() {
         BoardSizeScreen(
             state = BoardSizeUiState(),
             onBoardSizeChanged = {},
+            onStartGame = {},
         )
     }
 }
@@ -317,6 +369,7 @@ internal enum class BoardSizeLayout {
 
 internal const val BOARD_SIZE_SELECTED_VALUE_TEST_TAG = "board_size_selected_value"
 internal const val BOARD_SIZE_SLIDER_TEST_TAG = "board_size_slider"
+internal const val BOARD_SIZE_START_GAME_TEST_TAG = "board_size_start_game"
 
 private val MAX_CONTROLS_WIDTH = 360.dp
 private val MAX_BOARD_WIDTH = 560.dp

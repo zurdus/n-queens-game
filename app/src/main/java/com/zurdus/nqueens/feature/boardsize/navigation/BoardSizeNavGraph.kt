@@ -12,12 +12,13 @@ internal data object BoardSizeGraph
 
 internal fun NavGraphBuilder.boardSizeNavGraph(
     navController: NavController,
+    onStartGame: (Int) -> Unit,
 ) {
     navigation<BoardSizeGraph>(
         startDestination = BoardSizeDestination.Selection,
     ) {
         composable<BoardSizeDestination.Selection> {
-            BoardSizeScreen()
+            BoardSizeScreen(onStartGame = onStartGame)
         }
     }
 }

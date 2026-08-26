@@ -8,6 +8,7 @@ An Android puzzle game based on the N-Queens problem. Players choose a board siz
 - Expose durable renderable state as an immutable model through `StateFlow`.
 - Expose a `SharedFlow` only when a screen has a genuine transient effect. Never add an empty event stream solely to satisfy a pattern.
 - Keep screen content composables stateless: state flows down and named user callbacks flow up.
+- Handle navigation-only clicks through UI callbacks. Involve the ViewModel only when navigation depends on business logic or durable state.
 - Use Material 3 Adaptive window size classes for screen-level layout decisions.
 - Add use cases only for user-recognizable domain operations, such as starting or resetting a game. Do not wrap one-line validation or UI state changes in use cases.
 - Every use case has one public behavior method: `operator fun invoke(...)`.
@@ -30,5 +31,9 @@ An Android puzzle game based on the N-Queens problem. Players choose a board siz
 - `com.zurdus.nqueens.feature.boardsize.presentation`: board-size screen, state, and ViewModel
 - `com.zurdus.nqueens.feature.boardsize.navigation`: typed destinations and nested feature graph
 - `com.zurdus.nqueens.feature.boardsize.di`: board-size Koin module
+- `com.zurdus.nqueens.feature.game.presentation`: game screen state, ViewModel, and Compose UI
+- `com.zurdus.nqueens.feature.game.navigation`: typed game destination and nested feature graph
+- `com.zurdus.nqueens.feature.game.di`: game Koin module
+- `com.zurdus.nqueens.ui.component`: shared Compose components with multiple feature consumers
 - `com.zurdus.nqueens.ui.theme`: branded Material 3 light/dark theme
 - `com.zurdus.nqueens.ui.preview`: reusable theme, font-scale, and display-size previews

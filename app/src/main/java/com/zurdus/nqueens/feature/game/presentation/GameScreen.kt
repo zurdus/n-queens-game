@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -185,7 +186,7 @@ private fun GameVerticalLayout(
             .testTag(GAME_CONTENT_TEST_TAG),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        GameProgressCard(
+        GameStatusBanner(
             state = state,
             modifier = Modifier
                 .widthIn(max = MAX_BOARD_WIDTH)
@@ -204,7 +205,7 @@ private fun GameVerticalLayout(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        GameStatusBanner(
+        GameProgressCard(
             state = state,
             modifier = Modifier
                 .widthIn(max = MAX_BOARD_WIDTH)
@@ -222,9 +223,8 @@ private fun GameHorizontalLayout(
     Row(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .padding(16.dp)
             .testTag(GAME_CONTENT_TEST_TAG),
-        horizontalArrangement = Arrangement.spacedBy(32.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BoxWithConstraints(
@@ -254,11 +254,11 @@ private fun GameHorizontalLayout(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                GameProgressCard(
+                GameStatusBanner(
                     state = state,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                GameStatusBanner(
+                GameProgressCard(
                     state = state,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -453,17 +453,14 @@ private fun GameBottomBar(
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.background,
-        tonalElevation = 4.dp,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(
-                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
-                    ),
+                    WindowInsets.navigationBars
                 )
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.Center,
         ) {
             Row(

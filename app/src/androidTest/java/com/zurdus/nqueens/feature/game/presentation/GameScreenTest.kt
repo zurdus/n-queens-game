@@ -23,6 +23,7 @@ import com.zurdus.nqueens.feature.boardsize.presentation.BOARD_SIZE_SELECTED_VAL
 import com.zurdus.nqueens.feature.boardsize.presentation.BOARD_SIZE_SLIDER_TEST_TAG
 import com.zurdus.nqueens.feature.boardsize.presentation.BOARD_SIZE_START_GAME_TEST_TAG
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -61,6 +62,8 @@ class GameScreenTest {
         composeRule
             .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
             .assertTextEquals(gameProgress(placed = 0, boardSize = 8))
+
+        assertStatusIsAboveBoardAndProgressIsBelowBoard()
     }
 
     @Test
@@ -141,6 +144,27 @@ class GameScreenTest {
             (boardBounds.right - boardBounds.left).value,
             (boardBounds.bottom - boardBounds.top).value,
             0.5f,
+        )
+    }
+
+    private fun assertStatusIsAboveBoardAndProgressIsBelowBoard() {
+        val statusBounds = composeRule
+            .onNodeWithTag(GAME_STATUS_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+        val boardBounds = composeRule
+            .onNodeWithTag(GAME_CHESS_BOARD_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+        val progressBounds = composeRule
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+
+        assertTrue(
+            "Game status should be above the board.",
+            statusBounds.bottom <= boardBounds.top,
+        )
+        assertTrue(
+            "Game progress should be below the board.",
+            progressBounds.top >= boardBounds.bottom,
         )
     }
 

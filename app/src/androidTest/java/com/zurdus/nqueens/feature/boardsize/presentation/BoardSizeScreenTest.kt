@@ -20,7 +20,6 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.zurdus.nqueens.MainActivity
 import com.zurdus.nqueens.R
-import com.zurdus.nqueens.feature.boardsize.presentation.component.CHESS_BOARD_PREVIEW_TEST_TAG
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -65,7 +64,7 @@ class BoardSizeScreenTest {
                 activity.getString(R.string.board_size_slider_content_description),
             )
         composeRule
-            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG)
             .assertContentDescriptionEquals(boardDescription(8))
         composeRule
             .onNodeWithTag(BOARD_SIZE_START_GAME_TEST_TAG)
@@ -80,7 +79,7 @@ class BoardSizeScreenTest {
             .onNodeWithTag(BOARD_SIZE_SLIDER_TEST_TAG)
             .getUnclippedBoundsInRoot()
         val boardBounds = composeRule
-            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG)
             .getUnclippedBoundsInRoot()
 
         assertTrue(
@@ -97,7 +96,7 @@ class BoardSizeScreenTest {
             .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
             .assertTextEquals(boardSizeLabel(4))
         composeRule
-            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG)
             .assertContentDescriptionEquals(boardDescription(4))
         assertBoardCellCount(16)
     }
@@ -110,7 +109,7 @@ class BoardSizeScreenTest {
             .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
             .assertTextEquals(boardSizeLabel(12))
         composeRule
-            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG)
             .assertContentDescriptionEquals(boardDescription(12))
         assertBoardCellCount(144)
     }
@@ -122,22 +121,23 @@ class BoardSizeScreenTest {
             expectedOrientation = Configuration.ORIENTATION_LANDSCAPE,
         )
 
-        val sliderBounds = composeRule
-            .onNodeWithTag(BOARD_SIZE_SLIDER_TEST_TAG)
+        val controlsBounds = composeRule
+            .onNodeWithTag(BOARD_SIZE_CONTROLS_TEST_TAG)
             .assertIsDisplayed()
             .getUnclippedBoundsInRoot()
         val boardBounds = composeRule
-            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG)
             .assertIsDisplayed()
             .getUnclippedBoundsInRoot()
 
         assertTrue(
             "Horizontal layout should place the board beside the controls.",
-            boardBounds.left >= sliderBounds.right,
+            boardBounds.left >= controlsBounds.right,
         )
+        val controlsWidth = (controlsBounds.right - controlsBounds.left).value
         assertTrue(
-            "Controls should respect their maximum width.",
-            (sliderBounds.right - sliderBounds.left).value <= 360.5f,
+            "Controls should respect their maximum width. Actual width: $controlsWidth dp.",
+            controlsWidth <= 360.5f,
         )
         assertBoardIsSquare()
         assertSelectedValueIsBelowBoard()
@@ -162,7 +162,7 @@ class BoardSizeScreenTest {
 
     private fun assertBoardIsSquare() {
         val boardBounds = composeRule
-            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG)
             .getUnclippedBoundsInRoot()
 
         assertEquals(
@@ -175,7 +175,7 @@ class BoardSizeScreenTest {
 
     private fun assertSelectedValueIsBelowBoard() {
         val boardBounds = composeRule
-            .onNodeWithTag(CHESS_BOARD_PREVIEW_TEST_TAG)
+            .onNodeWithTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG)
             .getUnclippedBoundsInRoot()
         val selectedValueBounds = composeRule
             .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
@@ -220,9 +220,11 @@ class BoardSizeScreenTest {
             .onNodeWithTag(BOARD_SIZE_START_GAME_TEST_TAG)
             .getUnclippedBoundsInRoot()
 
+        val boardToButtonGap = (buttonBounds.top - selectedValueBounds.bottom).value
         assertTrue(
-            "Horizontal board content should sit near the bottom action.",
-            (buttonBounds.top - selectedValueBounds.bottom).value <= 48.5f,
+            "Horizontal board content should sit near the bottom action. " +
+                "Actual gap: $boardToButtonGap dp.",
+            boardToButtonGap <= 56.5f,
         )
     }
 

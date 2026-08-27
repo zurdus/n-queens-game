@@ -41,13 +41,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.zurdus.nqueens.R
-import com.zurdus.nqueens.feature.boardsize.presentation.component.ChessBoardPreview
+import com.zurdus.nqueens.ui.component.ChessBoard
 import com.zurdus.nqueens.ui.preview.NQueensPreview
 import com.zurdus.nqueens.ui.preview.NQueensPreviews
 import org.koin.compose.viewmodel.koinViewModel
@@ -80,7 +79,7 @@ private fun BoardSizeScreen(
     Scaffold(
         bottomBar = {
             BoardSizeBottomBar(
-                onStartGame = dropUnlessResumed {
+                onStartGame = {
                     onStartGame(state.selectedSize)
                 },
             )
@@ -152,16 +151,22 @@ private fun BoardSizeVerticalLayout(
                     .fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            ChessBoardPreview(
+            ChessBoard(
                 boardSize = state.selectedSize,
+                contentDescription = stringResource(
+                    R.string.board_preview_content_description,
+                    state.selectedSize,
+                    state.selectedSize,
+                ),
                 modifier = Modifier
                     .widthIn(max = boardMaxWidth)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .testTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG),
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             BoardSizeSelectedValue(selectedSize = state.selectedSize)
         }
@@ -178,7 +183,7 @@ private fun BoardSizeHorizontalLayout(
         modifier = modifier
             .fillMaxSize()
             .padding(24.dp),
-        horizontalArrangement = Arrangement.spacedBy(32.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -205,9 +210,13 @@ private fun BoardSizeHorizontalLayout(
             val selectedValueHeight = with(LocalDensity.current) {
                 MaterialTheme.typography.displaySmall.lineHeight.toDp()
             }
+
+            val availableBoardHeight =
+                (maxHeight - selectedValueHeight - 12.dp).coerceAtLeast(0.dp)
+
             val boardDimension = minOf(
                 maxWidth,
-                (maxHeight - selectedValueHeight - 12.dp).coerceAtLeast(0.dp),
+                availableBoardHeight,
                 MAX_BOARD_WIDTH,
             )
 
@@ -215,9 +224,16 @@ private fun BoardSizeHorizontalLayout(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                ChessBoardPreview(
+                ChessBoard(
                     boardSize = state.selectedSize,
-                    modifier = Modifier.size(boardDimension),
+                    contentDescription = stringResource(
+                        R.string.board_preview_content_description,
+                        state.selectedSize,
+                        state.selectedSize,
+                    ),
+                    modifier = Modifier
+                        .size(boardDimension)
+                        .testTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG),
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -245,7 +261,7 @@ private fun BoardSizeBottomBar(
                         WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
                     ),
                 )
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(24.dp),
             contentAlignment = Alignment.Center,
         ) {
             Button(
@@ -297,7 +313,7 @@ private fun BoardSizeControls(
     val sliderDescription = stringResource(R.string.board_size_slider_content_description)
 
     Column(
-        modifier = modifier,
+        modifier = modifier.testTag(BOARD_SIZE_CONTROLS_TEST_TAG),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -353,7 +369,7 @@ private fun BoardSizeScreenPreview() {
 internal fun WindowSizeClass.toBoardSizeLayout(): BoardSizeLayout = when {
     isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND) -> BoardSizeLayout.HORIZONTAL
     isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND) &&
-        isHeightAtLeastBreakpoint(HEIGHT_DP_MEDIUM_LOWER_BOUND) -> {
+            isHeightAtLeastBreakpoint(HEIGHT_DP_MEDIUM_LOWER_BOUND) -> {
         BoardSizeLayout.VERTICAL_MEDIUM
     }
 
@@ -368,6 +384,8 @@ internal enum class BoardSizeLayout {
 }
 
 internal const val BOARD_SIZE_SELECTED_VALUE_TEST_TAG = "board_size_selected_value"
+internal const val BOARD_SIZE_CHESS_BOARD_TEST_TAG = "board_size_chess_board"
+internal const val BOARD_SIZE_CONTROLS_TEST_TAG = "board_size_controls"
 internal const val BOARD_SIZE_SLIDER_TEST_TAG = "board_size_slider"
 internal const val BOARD_SIZE_START_GAME_TEST_TAG = "board_size_start_game"
 

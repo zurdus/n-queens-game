@@ -45,16 +45,13 @@ internal fun ChessBoard(
     require(boardSize > 0) { "Board size must be positive." }
 
     val boardColors = MaterialTheme.boardColors
-    val boardShape = RoundedCornerShape(16.dp)
 
     Column(
         modifier = modifier
             .aspectRatio(1f)
-            .clip(boardShape)
             .border(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.outline,
-                shape = boardShape,
             )
             .semantics(mergeDescendants = onCellClick == null) {
                 this.contentDescription = contentDescription

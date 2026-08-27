@@ -21,7 +21,6 @@ fun NQueensNavHost(
         modifier = modifier,
     ) {
         boardSizeNavGraph(
-            navController = navController,
             onStartGame = navController::navigateToGame,
         )
         gameNavGraph(navController)

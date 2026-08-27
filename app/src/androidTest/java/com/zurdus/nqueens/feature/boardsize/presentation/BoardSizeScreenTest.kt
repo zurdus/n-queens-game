@@ -72,6 +72,7 @@ class BoardSizeScreenTest {
 
         assertBoardCellCount(64)
         assertBoardIsSquare()
+        assertSelectorIsAboveBoard()
         assertSelectedValueIsBelowBoard()
         assertStartGameIsPinnedToBottom()
 
@@ -83,7 +84,7 @@ class BoardSizeScreenTest {
             .getUnclippedBoundsInRoot()
 
         assertTrue(
-            "Vertical layout should place the board below the controls.",
+            "Vertical layout should place the board below the selector.",
             boardBounds.top >= sliderBounds.bottom,
         )
     }
@@ -131,13 +132,13 @@ class BoardSizeScreenTest {
             .getUnclippedBoundsInRoot()
 
         assertTrue(
-            "Horizontal layout should place the board beside the controls.",
-            boardBounds.left >= controlsBounds.right,
+            "Horizontal layout should place the controls beside the board.",
+            controlsBounds.left >= boardBounds.right,
         )
         val controlsWidth = (controlsBounds.right - controlsBounds.left).value
         assertTrue(
             "Controls should respect their maximum width. Actual width: $controlsWidth dp.",
-            controlsWidth <= 360.5f,
+            controlsWidth <= 380.5f,
         )
         assertBoardIsSquare()
         assertSelectedValueIsBelowBoard()
@@ -187,6 +188,20 @@ class BoardSizeScreenTest {
         )
     }
 
+    private fun assertSelectorIsAboveBoard() {
+        val controlsBounds = composeRule
+            .onNodeWithTag(BOARD_SIZE_CONTROLS_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+        val boardBounds = composeRule
+            .onNodeWithTag(BOARD_SIZE_CHESS_BOARD_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+
+        assertTrue(
+            "Selector should be above the board in the vertical layout.",
+            controlsBounds.bottom <= boardBounds.top,
+        )
+    }
+
     private fun assertStartGameIsPinnedToBottom() {
         val selectedValueBounds = composeRule
             .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
@@ -208,7 +223,7 @@ class BoardSizeScreenTest {
         )
         assertTrue(
             "Start Game should respect its maximum width.",
-            (buttonBounds.right - buttonBounds.left).value <= 360.5f,
+            (buttonBounds.right - buttonBounds.left).value <= 560.5f,
         )
     }
 

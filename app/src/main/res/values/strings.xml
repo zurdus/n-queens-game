@@ -9,7 +9,7 @@
     <string name="game_instruction" tools:ignore="PluralsCandidate">Place %1$d queens so that none threaten each other.</string>
     <string name="game_board_content_description" tools:ignore="PluralsCandidate">%1$d by %2$d game board</string>
     <string name="game_title">N Queens</string>
-    <string name="game_back">‹ Boards</string>
+    <string name="game_back">Back</string>
     <string name="game_your_progress">Your progress</string>
     <string name="game_progress">%1$d / %2$d queens</string>
     <string name="game_undo">Undo</string>

@@ -11,6 +11,7 @@ An Android puzzle game based on the N-Queens problem. Players choose a board siz
 - Keep screen content composables stateless: state flows down and named user callbacks flow up.
 - Handle navigation-only clicks through UI callbacks. Involve the ViewModel only when navigation depends on business logic or durable state.
 - Use Material 3 Adaptive window size classes for screen-level layout decisions.
+- Prefer Material 3 components over custom equivalents whenever they satisfy the design.
 - Add use cases only for user-recognizable domain operations, such as starting or resetting a game. Do not wrap one-line validation or UI state changes in use cases.
 - Every use case has one public behavior method: `operator fun invoke(...)`.
 - Prefer one app module organized feature-first until module boundaries solve a real build or ownership problem.

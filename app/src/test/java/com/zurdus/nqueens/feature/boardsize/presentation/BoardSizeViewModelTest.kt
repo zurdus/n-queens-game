@@ -1,6 +1,6 @@
 package com.zurdus.nqueens.feature.boardsize.presentation
 
-import com.zurdus.nqueens.feature.boardsize.domain.BoardSizeRules
+import com.zurdus.nqueens.domain.NQueensRules
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -17,7 +17,7 @@ class BoardSizeViewModelTest {
     fun `board-size change accepts every supported size`() {
         val viewModel = BoardSizeViewModel()
 
-        (BoardSizeRules.MIN..BoardSizeRules.MAX).forEach { size ->
+        NQueensRules.supportedBoardSizes.forEach { size ->
             viewModel.onBoardSizeChanged(size)
 
             assertEquals(size, viewModel.uiState.value.selectedSize)
@@ -29,9 +29,15 @@ class BoardSizeViewModelTest {
         val viewModel = BoardSizeViewModel()
 
         viewModel.onBoardSizeChanged(Int.MIN_VALUE)
-        assertEquals(BoardSizeRules.MIN, viewModel.uiState.value.selectedSize)
+        assertEquals(
+            NQueensRules.MINIMUM_BOARD_SIZE,
+            viewModel.uiState.value.selectedSize,
+        )
 
         viewModel.onBoardSizeChanged(Int.MAX_VALUE)
-        assertEquals(BoardSizeRules.MAX, viewModel.uiState.value.selectedSize)
+        assertEquals(
+            NQueensRules.MAXIMUM_BOARD_SIZE,
+            viewModel.uiState.value.selectedSize,
+        )
     }
 }

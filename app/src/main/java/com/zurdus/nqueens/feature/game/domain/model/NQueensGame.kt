@@ -1,35 +1,36 @@
 package com.zurdus.nqueens.feature.game.domain.model
 
+import com.zurdus.nqueens.domain.NQueensRules
+
 internal data class NQueensGame(
     val boardSize: Int,
-    val queens: Set<BoardPosition> = emptySet(),
+    val queenSquares: Set<BoardSquare> = emptySet(),
 ) {
     init {
-        require(boardSize >= MINIMUM_BOARD_SIZE) {
-            "Board size must be at least $MINIMUM_BOARD_SIZE."
+        require(boardSize in NQueensRules.supportedBoardSizes) {
+            "Board size must be between ${NQueensRules.MINIMUM_BOARD_SIZE} " +
+                "and ${NQueensRules.MAXIMUM_BOARD_SIZE}."
         }
-        require(queens.size <= boardSize) {
+        require(queenSquares.size <= boardSize) {
             "A game cannot contain more queens than its board size."
         }
-        require(queens.all { position -> position.isOnBoard(boardSize) }) {
+        require(queenSquares.all { square -> square.isOnBoard(boardSize) }) {
             "Every queen must be placed on the board."
         }
     }
 
-    val conflictingQueens: Set<BoardPosition>
-        get() = queens
-            .filter { queen ->
-                queens.any { other ->
-                    queen != other && queen.attacks(other)
+    val conflictingQueenSquares: Set<BoardSquare>
+        get() = queenSquares
+            .filter { queenSquare ->
+                queenSquares.any { otherSquare ->
+                    queenSquare != otherSquare && queenSquare.attacks(otherSquare)
                 }
             }
             .toSet()
 
     val queensLeft: Int
-        get() = boardSize - queens.size
+        get() = boardSize - queenSquares.size
 
     val isSolved: Boolean
-        get() = queensLeft == 0 && conflictingQueens.isEmpty()
+        get() = queensLeft == 0 && conflictingQueenSquares.isEmpty()
 }
-
-private const val MINIMUM_BOARD_SIZE = 4

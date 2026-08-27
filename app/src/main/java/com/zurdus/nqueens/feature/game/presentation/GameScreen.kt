@@ -49,7 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.zurdus.nqueens.R
-import com.zurdus.nqueens.feature.game.domain.model.BoardPosition
+import com.zurdus.nqueens.feature.game.domain.model.BoardSquare
 import com.zurdus.nqueens.ui.component.ChessBoard
 import com.zurdus.nqueens.ui.preview.NQueensPreview
 import com.zurdus.nqueens.ui.preview.NQueensPreviews
@@ -96,7 +96,7 @@ private fun GameScreen(
         },
         bottomBar = {
             GameBottomBar(
-                hasQueens = state.queens.isNotEmpty(),
+                hasQueens = state.queenSquares.isNotEmpty(),
                 canUndo = state.canUndo,
                 isSolved = state.isSolved,
                 onUndoClick = onUndoClick,
@@ -313,7 +313,7 @@ private fun GameProgressCard(
                 Text(
                     text = stringResource(
                         R.string.game_progress,
-                        state.queens.size,
+                        state.queenSquares.size,
                         state.boardSize,
                     ),
                     modifier = Modifier.testTag(GAME_PROGRESS_TEST_TAG),
@@ -326,11 +326,11 @@ private fun GameProgressCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             LinearProgressIndicator(
-                progress = { state.queens.size.toFloat() / state.boardSize },
+                progress = { state.queenSquares.size.toFloat() / state.boardSize },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp),
-                color = if (state.conflictingQueens.isEmpty()) {
+                color = if (state.conflictingQueenSquares.isEmpty()) {
                     MaterialTheme.colorScheme.tertiary
                 } else {
                     MaterialTheme.colorScheme.error
@@ -360,8 +360,8 @@ private fun GameBoard(
     onCellClick: (row: Int, column: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val queens = state.queens.toSet()
-    val conflictingQueens = state.conflictingQueens
+    val queenSquares = state.queenSquares
+    val conflictingQueenSquares = state.conflictingQueenSquares
 
     ChessBoard(
         boardSize = state.boardSize,
@@ -371,8 +371,10 @@ private fun GameBoard(
             state.boardSize,
         ),
         modifier = modifier.testTag(GAME_CHESS_BOARD_TEST_TAG),
-        isQueenAt = { row, column -> BoardPosition(row, column) in queens },
-        isConflictingAt = { row, column -> BoardPosition(row, column) in conflictingQueens },
+        isQueenAt = { row, column -> BoardSquare(row, column) in queenSquares },
+        isConflictingAt = { row, column ->
+            BoardSquare(row, column) in conflictingQueenSquares
+        },
         onCellClick = onCellClick,
     )
 }
@@ -435,15 +437,15 @@ private fun gameStatus(state: GameUiState): GameStatus = when {
         containerColor = MaterialTheme.colorScheme.tertiaryContainer,
         contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
     )
-    state.conflictingQueens.isNotEmpty() -> GameStatus(
+    state.conflictingQueenSquares.isNotEmpty() -> GameStatus(
         symbol = "!",
         title = R.string.game_status_conflict_title,
         message = R.string.game_status_conflict_message,
-        messageArgument = state.conflictingQueens.size,
+        messageArgument = state.conflictingQueenSquares.size,
         containerColor = MaterialTheme.colorScheme.errorContainer,
         contentColor = MaterialTheme.colorScheme.onErrorContainer,
     )
-    state.queens.isEmpty() -> GameStatus(
+    state.queenSquares.isEmpty() -> GameStatus(
         symbol = "♛",
         title = R.string.game_status_ready_title,
         message = R.string.game_status_ready_message,
@@ -455,7 +457,7 @@ private fun gameStatus(state: GameUiState): GameStatus = when {
         symbol = "✓",
         title = R.string.game_status_safe_title,
         message = R.string.game_status_safe_message,
-        messageArgument = state.boardSize - state.queens.size,
+        messageArgument = state.queensLeft,
         containerColor = MaterialTheme.colorScheme.tertiaryContainer,
         contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
     )
@@ -526,10 +528,10 @@ private fun GameScreenPreview() {
         GameScreen(
             state = GameUiState(
                 boardSize = 8,
-                queens = setOf(
-                    BoardPosition(0, 0),
-                    BoardPosition(2, 3),
-                    BoardPosition(5, 6),
+                queenSquares = setOf(
+                    BoardSquare(0, 0),
+                    BoardSquare(2, 3),
+                    BoardSquare(5, 6),
                 ),
             ),
             onNavigateBack = {},

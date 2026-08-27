@@ -60,6 +60,7 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.koin.test.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)

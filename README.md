@@ -6,6 +6,7 @@ An Android puzzle game based on the N-Queens problem. Players choose a board siz
 
 - Use Jetpack Compose for UI and a screen-level `ViewModel` as the state holder.
 - Expose durable renderable state as an immutable model through `StateFlow`.
+- Keep one immutable domain session as the source of game state and derive render-only UI state from it.
 - Expose a `SharedFlow` only when a screen has a genuine transient effect. Never add an empty event stream solely to satisfy a pattern.
 - Keep screen content composables stateless: state flows down and named user callbacks flow up.
 - Handle navigation-only clicks through UI callbacks. Involve the ViewModel only when navigation depends on business logic or durable state.
@@ -27,7 +28,7 @@ An Android puzzle game based on the N-Queens problem. Players choose a board siz
 - `com.zurdus.nqueens`: application and activity entry points
 - `com.zurdus.nqueens.di`: aggregation of feature-owned Koin modules
 - `com.zurdus.nqueens.navigation`: root navigation host
-- `com.zurdus.nqueens.feature.boardsize.domain`: board-size business rules
+- `com.zurdus.nqueens.domain`: rules shared by multiple features
 - `com.zurdus.nqueens.feature.boardsize.presentation`: board-size screen, state, and ViewModel
 - `com.zurdus.nqueens.feature.boardsize.navigation`: typed destinations and nested feature graph
 - `com.zurdus.nqueens.feature.boardsize.di`: board-size Koin module

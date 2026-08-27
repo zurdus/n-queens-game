@@ -1,7 +1,7 @@
 package com.zurdus.nqueens.feature.boardsize.presentation
 
 import androidx.lifecycle.ViewModel
-import com.zurdus.nqueens.feature.boardsize.domain.BoardSizeRules
+import com.zurdus.nqueens.domain.NQueensRules
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +13,7 @@ internal class BoardSizeViewModel : ViewModel() {
     val uiState: StateFlow<BoardSizeUiState> = _uiState.asStateFlow()
 
     fun onBoardSizeChanged(size: Int) {
-        val selectedSize = BoardSizeRules.clamp(size)
+        val selectedSize = size.coerceIn(NQueensRules.supportedBoardSizes)
         if (selectedSize == _uiState.value.selectedSize) return
 
         _uiState.update { currentState ->

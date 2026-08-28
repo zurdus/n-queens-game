@@ -43,6 +43,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -50,6 +51,10 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.zurdus.nqueens.R
+import com.zurdus.nqueens.ui.motion.AnimatedEntrance
+import com.zurdus.nqueens.ui.motion.AnimatedHeartbeat
+import com.zurdus.nqueens.ui.motion.AnimatedSparks
+import com.zurdus.nqueens.ui.motion.NQueensMotion
 import com.zurdus.nqueens.ui.preview.NQueensPreview
 import com.zurdus.nqueens.ui.preview.NQueensPreviews
 
@@ -205,15 +210,18 @@ private fun GameVictoryCompactHeightContent(
 private fun GameVictoryHero(
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.clearAndSetSemantics {
-            testTag = GAME_VICTORY_HERO_TEST_TAG
-        },
-        color = MaterialTheme.colorScheme.tertiaryContainer,
-        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-        shape = CircleShape,
+    AnimatedEntrance(
+        enter = NQueensMotion.celebrationEnter,
+        modifier = modifier,
     ) {
-        BoxWithConstraints(contentAlignment = Alignment.Center) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .clearAndSetSemantics {
+                    testTag = GAME_VICTORY_HERO_TEST_TAG
+                },
+            contentAlignment = Alignment.Center,
+        ) {
             val maximumEmojiSize = with(LocalDensity.current) {
                 (maxWidth - 8.dp).coerceAtLeast(0.dp).toSp()
             }
@@ -221,9 +229,35 @@ private fun GameVictoryHero(
                 MaterialTheme.typography.displayMedium.fontSize.value,
                 (maximumEmojiSize * 0.7f).value,
             ).sp
+            val sparkleSize = with(LocalDensity.current) {
+                (maxWidth * SPARKLE_SIZE_FRACTION).toSp()
+            }
 
+            AnimatedHeartbeat(modifier = Modifier.fillMaxSize()) {
+                GameVictoryPrize(emojiSize = emojiSize)
+            }
+
+            AnimatedSparks(modifier = Modifier.fillMaxSize()) {
+                GameVictorySparkle(fontSize = sparkleSize)
+            }
+        }
+    }
+}
+
+@Composable
+private fun GameVictoryPrize(
+    emojiSize: TextUnit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        shape = CircleShape,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
             Text(
-                text = "🏆",
+                text = TROPHY_GLYPH,
                 modifier = Modifier.padding(4.dp),
                 fontSize = emojiSize,
                 fontWeight = FontWeight.Bold,
@@ -231,6 +265,21 @@ private fun GameVictoryHero(
             )
         }
     }
+}
+
+@Composable
+private fun GameVictorySparkle(
+    fontSize: TextUnit,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = SPARKLE_GLYPH,
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.onTertiaryContainer,
+        fontSize = fontSize,
+        fontWeight = FontWeight.Bold,
+        lineHeight = fontSize,
+    )
 }
 
 @Composable
@@ -363,3 +412,6 @@ internal const val GAME_VICTORY_PLAY_AGAIN_TEST_TAG = "game_victory_play_again"
 internal const val GAME_VICTORY_TITLE_TEST_TAG = "game_victory_title"
 
 private val MAX_VICTORY_DIALOG_WIDTH = 560.dp
+private const val SPARKLE_GLYPH = "✦"
+private const val SPARKLE_SIZE_FRACTION = 0.18f
+private const val TROPHY_GLYPH = "🏆"

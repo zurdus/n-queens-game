@@ -1,5 +1,6 @@
 package com.zurdus.nqueens.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,8 +30,10 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.zurdus.nqueens.R
+import com.zurdus.nqueens.ui.motion.NQueensMotion
 import com.zurdus.nqueens.ui.theme.boardColors
 
 @Composable
@@ -157,37 +160,55 @@ private fun ChessBoardSquare(
             .then(interactiveModifier),
         contentAlignment = Alignment.Center,
     ) {
-        if (hasQueen) {
-            val queenFontSize = with(LocalDensity.current) {
-                (maxWidth * 0.58f).toSp()
-            }
-            val pieceBackground = if (hasConflict) {
-                MaterialTheme.colorScheme.error
-            } else {
-                MaterialTheme.colorScheme.secondaryContainer
-            }
-            val pieceColor = if (hasConflict) {
-                MaterialTheme.colorScheme.onError
-            } else {
-                MaterialTheme.colorScheme.onSecondaryContainer
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(0.74f)
-                    .background(pieceBackground, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = QUEEN_GLYPH,
-                    color = pieceColor,
-                    fontSize = queenFontSize,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = queenFontSize,
-                    textAlign = TextAlign.Center,
-                )
-            }
+        val queenFontSize = with(LocalDensity.current) {
+            (maxWidth * QUEEN_FONT_SIZE_FRACTION).toSp()
         }
+        val pieceBackground = if (hasConflict) {
+            MaterialTheme.colorScheme.error
+        } else {
+            MaterialTheme.colorScheme.secondaryContainer
+        }
+        val pieceColor = if (hasConflict) {
+            MaterialTheme.colorScheme.onError
+        } else {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        }
+
+        AnimatedVisibility(
+            visible = hasQueen,
+            enter = NQueensMotion.queenEnter,
+            exit = NQueensMotion.queenExit,
+        ) {
+            ChessQueen(
+                fontSize = queenFontSize,
+                backgroundColor = pieceBackground,
+                contentColor = pieceColor,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChessQueen(
+    fontSize: TextUnit,
+    backgroundColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize(0.74f)
+            .background(backgroundColor, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = QUEEN_GLYPH,
+            color = contentColor,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Bold,
+            lineHeight = fontSize,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
@@ -197,4 +218,5 @@ internal fun chessBoardCellTestTag(row: Int, column: Int): String =
 internal fun isLightSquare(row: Int, column: Int): Boolean =
     (row + column) % 2 == 0
 
+private const val QUEEN_FONT_SIZE_FRACTION = 0.58f
 private const val QUEEN_GLYPH = "♛"

@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -112,6 +113,116 @@ class GameScreenTest {
             .assertTextEquals(gameProgress(placed = 0, boardSize = 8))
     }
 
+    @Test
+    fun solvingFourByFourShowsVictoryAndCloseRevealsSolution() {
+        startFourByFourGame()
+        solveFourByFourGame()
+
+        composeRule
+            .onNodeWithTag(GAME_VICTORY_DIALOG_TEST_TAG)
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithTag(GAME_VICTORY_TITLE_TEST_TAG)
+            .assertTextEquals(composeRule.activity.getString(R.string.game_status_solved_title))
+        composeRule
+            .onNodeWithTag(GAME_VICTORY_MESSAGE_TEST_TAG)
+            .assertTextEquals(gameSolvedMessage(boardSize = 4))
+
+        composeRule.onNodeWithTag(GAME_VICTORY_CLOSE_TEST_TAG).performClick()
+        composeRule.waitForIdle()
+
+        composeRule
+            .onAllNodesWithTag(GAME_VICTORY_DIALOG_TEST_TAG)
+            .assertCountEquals(0)
+        composeRule
+            .onNodeWithTag(GAME_CHESS_BOARD_TEST_TAG)
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .assertTextEquals(gameProgress(placed = 4, boardSize = 4))
+        composeRule
+            .onAllNodesWithText(composeRule.activity.getString(R.string.game_status_solved_title))
+            .assertCountEquals(1)
+    }
+
+    @Test
+    fun playAgainFromVictoryRestartsTheSameBoardSize() {
+        startFourByFourGame()
+        solveFourByFourGame()
+
+        composeRule.onNodeWithTag(GAME_VICTORY_PLAY_AGAIN_TEST_TAG).performClick()
+        composeRule.waitForIdle()
+
+        composeRule
+            .onAllNodesWithTag(GAME_VICTORY_DIALOG_TEST_TAG)
+            .assertCountEquals(0)
+        composeRule
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .assertTextEquals(gameProgress(placed = 0, boardSize = 4))
+        assertBoardCellCount(expectedCount = 16)
+    }
+
+    @Test
+    fun chooseBoardSizeFromVictoryReturnsToRetainedSelection() {
+        startFourByFourGame()
+        solveFourByFourGame()
+
+        composeRule.onNodeWithTag(GAME_VICTORY_CHOOSE_SIZE_TEST_TAG).performClick()
+        composeRule.waitForIdle()
+
+        composeRule
+            .onNodeWithTag(BOARD_SIZE_SELECTED_VALUE_TEST_TAG)
+            .assertTextEquals(boardSizeLabel(size = 4))
+        assertBoardCellCount(expectedCount = 16)
+    }
+
+    @Test
+    fun systemBackFromVictoryRevealsSolutionBeforeLeavingGame() {
+        startFourByFourGame()
+        solveFourByFourGame()
+
+        pressBack()
+        composeRule.waitForIdle()
+
+        composeRule
+            .onAllNodesWithTag(GAME_VICTORY_DIALOG_TEST_TAG)
+            .assertCountEquals(0)
+        composeRule
+            .onNodeWithTag(GAME_CHESS_BOARD_TEST_TAG)
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .assertTextEquals(gameProgress(placed = 4, boardSize = 4))
+    }
+
+    @Test
+    fun compactHeightVictoryKeepsHeroAboveTitleAndActionsVisible() {
+        setOrientation(
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
+            expectedOrientation = Configuration.ORIENTATION_LANDSCAPE,
+        )
+        startFourByFourGame()
+        solveFourByFourGame()
+
+        val heroBounds = composeRule
+            .onNodeWithTag(GAME_VICTORY_HERO_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+        val titleBounds = composeRule
+            .onNodeWithTag(GAME_VICTORY_TITLE_TEST_TAG)
+            .getUnclippedBoundsInRoot()
+
+        assertTrue(
+            "The victory hero should not overlap the title.",
+            heroBounds.bottom <= titleBounds.top,
+        )
+        composeRule
+            .onNodeWithTag(GAME_VICTORY_PLAY_AGAIN_TEST_TAG)
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithTag(GAME_VICTORY_CHOOSE_SIZE_TEST_TAG)
+            .assertIsDisplayed()
+    }
+
     private fun selectBoardSize(size: Int) {
         composeRule
             .onNodeWithTag(BOARD_SIZE_SLIDER_TEST_TAG)
@@ -125,6 +236,29 @@ class GameScreenTest {
         composeRule
             .onNodeWithTag(BOARD_SIZE_START_GAME_TEST_TAG)
             .performClick()
+        composeRule.waitForIdle()
+    }
+
+    private fun startFourByFourGame() {
+        selectBoardSize(size = 4)
+        startGame()
+    }
+
+    private fun solveFourByFourGame() {
+        clickCell(row = 0, column = 1)
+        clickCell(row = 1, column = 3)
+        clickCell(row = 2, column = 0)
+        clickCell(row = 3, column = 2)
+    }
+
+    private fun setOrientation(
+        requestedOrientation: Int,
+        expectedOrientation: Int,
+    ) {
+        composeRule.activity.requestedOrientation = requestedOrientation
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.activity.resources.configuration.orientation == expectedOrientation
+        }
         composeRule.waitForIdle()
     }
 
@@ -173,6 +307,9 @@ class GameScreenTest {
 
     private fun gameProgress(placed: Int, boardSize: Int): String =
         composeRule.activity.getString(R.string.game_progress, placed, boardSize)
+
+    private fun gameSolvedMessage(boardSize: Int): String =
+        composeRule.activity.getString(R.string.game_status_solved_message, boardSize)
 
     private fun gameBoardDescription(boardSize: Int): String =
         composeRule.activity.getString(

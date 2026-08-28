@@ -74,6 +74,20 @@ class GameViewModelTest {
     }
 
     @Test
+    fun `solving the game updates the solved UI state`() = runTest {
+        val viewModel = createViewModel(boardSize = 4)
+
+        viewModel.onCellClicked(row = 0, column = 1)
+        viewModel.onCellClicked(row = 1, column = 3)
+        viewModel.onCellClicked(row = 2, column = 0)
+        viewModel.onCellClicked(row = 3, column = 2)
+
+        assertEquals(0, viewModel.uiState.value.queensLeft)
+        assertTrue(viewModel.uiState.value.conflictingQueenSquares.isEmpty())
+        assertTrue(viewModel.uiState.value.isSolved)
+    }
+
+    @Test
     fun `undo restores the game before the last placement change`() = runTest {
         val viewModel = createViewModel(boardSize = 4)
         val firstQueenSquare = BoardSquare(row = 0, column = 1)

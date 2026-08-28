@@ -39,7 +39,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -71,6 +75,12 @@ internal fun GameScreen(
     ),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var isVictoryDismissed by rememberSaveable { mutableStateOf(false) }
+    val isVictoryVisible = state.isSolved && !isVictoryDismissed
+
+    LaunchedEffect(state.isSolved) {
+        if (!state.isSolved) isVictoryDismissed = false
+    }
 
     GameScreen(
         state = state,
@@ -78,6 +88,19 @@ internal fun GameScreen(
         onCellClick = viewModel::onCellClicked,
         onUndoClick = viewModel::onUndoClicked,
         onResetClick = viewModel::onResetClicked,
+    )
+
+    GameVictoryDialog(
+        showDialog = isVictoryVisible,
+        boardSize = state.boardSize,
+        onClose = {
+            isVictoryDismissed = true
+        },
+        onPlayAgain = {
+            isVictoryDismissed = true
+            viewModel.onResetClicked()
+        },
+        onChooseBoardSize = onNavigateBack,
     )
 }
 

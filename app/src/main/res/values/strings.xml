@@ -11,7 +11,10 @@
     <string name="game_title">N Queens</string>
     <string name="game_back">Back</string>
     <string name="game_your_progress">Your progress</string>
-    <string name="game_progress">%1$d / %2$d queens</string>
+    <plurals name="game_queens_left">
+        <item quantity="one">%1$d queen left</item>
+        <item quantity="other">%1$d queens left</item>
+    </plurals>
     <string name="game_undo">Undo</string>
     <string name="game_reset">Reset board</string>
     <string name="game_play_again">Play again</string>
@@ -20,7 +23,7 @@
     <string name="game_status_ready_title">Your move</string>
     <string name="game_status_ready_message" tools:ignore="PluralsCandidate">Tap any square to place the first queen.</string>
     <string name="game_status_safe_title">Safe so far</string>
-    <string name="game_status_safe_message" tools:ignore="PluralsCandidate">%1$d queens left to place. Keep going!</string>
+    <string name="game_status_safe_message">No conflicts. Keep going!</string>
     <string name="game_status_conflict_title">Queens are attacking</string>
     <string name="game_status_conflict_message">Move the queens marked in red.</string>
     <string name="game_status_solved_title">Puzzle solved!</string>

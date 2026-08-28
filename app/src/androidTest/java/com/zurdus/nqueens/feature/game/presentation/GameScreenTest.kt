@@ -62,7 +62,7 @@ class GameScreenTest {
         assertGameBoardIsSquare()
         composeRule
             .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
-            .assertTextEquals(gameProgress(placed = 0, boardSize = 8))
+            .assertTextEquals(queensLeftLabel(queensLeft = 8))
 
         assertStatusIsAboveBoardAndProgressIsBelowBoard()
     }
@@ -97,7 +97,7 @@ class GameScreenTest {
         clickCell(row = 0, column = 2)
         composeRule
             .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
-            .assertTextEquals(gameProgress(placed = 2, boardSize = 8))
+            .assertTextEquals(queensLeftLabel(queensLeft = 6))
         composeRule
             .onAllNodesWithText(composeRule.activity.getString(R.string.game_status_conflict_title))
             .assertCountEquals(1)
@@ -105,12 +105,28 @@ class GameScreenTest {
         composeRule.onNodeWithTag(GAME_UNDO_TEST_TAG).performClick()
         composeRule
             .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
-            .assertTextEquals(gameProgress(placed = 1, boardSize = 8))
+            .assertTextEquals(queensLeftLabel(queensLeft = 7))
+        composeRule
+            .onAllNodesWithText(composeRule.activity.getString(R.string.game_status_safe_message))
+            .assertCountEquals(1)
 
         composeRule.onNodeWithTag(GAME_RESET_TEST_TAG).performClick()
         composeRule
             .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
-            .assertTextEquals(gameProgress(placed = 0, boardSize = 8))
+            .assertTextEquals(queensLeftLabel(queensLeft = 8))
+    }
+
+    @Test
+    fun progressUsesSingularCopyWhenOneQueenRemains() {
+        startFourByFourGame()
+
+        clickCell(row = 0, column = 0)
+        clickCell(row = 1, column = 1)
+        clickCell(row = 2, column = 2)
+
+        composeRule
+            .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
+            .assertTextEquals(queensLeftLabel(queensLeft = 1))
     }
 
     @Test
@@ -139,7 +155,7 @@ class GameScreenTest {
             .assertIsDisplayed()
         composeRule
             .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
-            .assertTextEquals(gameProgress(placed = 4, boardSize = 4))
+            .assertTextEquals(queensLeftLabel(queensLeft = 0))
         composeRule
             .onAllNodesWithText(composeRule.activity.getString(R.string.game_status_solved_title))
             .assertCountEquals(1)
@@ -158,7 +174,7 @@ class GameScreenTest {
             .assertCountEquals(0)
         composeRule
             .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
-            .assertTextEquals(gameProgress(placed = 0, boardSize = 4))
+            .assertTextEquals(queensLeftLabel(queensLeft = 4))
         assertBoardCellCount(expectedCount = 16)
     }
 
@@ -192,7 +208,7 @@ class GameScreenTest {
             .assertIsDisplayed()
         composeRule
             .onNodeWithTag(GAME_PROGRESS_TEST_TAG)
-            .assertTextEquals(gameProgress(placed = 4, boardSize = 4))
+            .assertTextEquals(queensLeftLabel(queensLeft = 0))
     }
 
     @Test
@@ -305,8 +321,12 @@ class GameScreenTest {
     private fun gameInstruction(boardSize: Int): String =
         composeRule.activity.getString(R.string.game_instruction, boardSize)
 
-    private fun gameProgress(placed: Int, boardSize: Int): String =
-        composeRule.activity.getString(R.string.game_progress, placed, boardSize)
+    private fun queensLeftLabel(queensLeft: Int): String =
+        composeRule.activity.resources.getQuantityString(
+            R.plurals.game_queens_left,
+            queensLeft,
+            queensLeft,
+        )
 
     private fun gameSolvedMessage(boardSize: Int): String =
         composeRule.activity.getString(R.string.game_status_solved_message, boardSize)

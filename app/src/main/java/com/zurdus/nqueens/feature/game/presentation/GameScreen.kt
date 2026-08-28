@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
@@ -312,10 +313,10 @@ private fun GameProgressCard(
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = stringResource(
-                        R.string.game_progress,
-                        state.queenSquares.size,
-                        state.boardSize,
+                    text = pluralStringResource(
+                        R.plurals.game_queens_left,
+                        state.queensLeft,
+                        state.queensLeft,
                     ),
                     modifier = Modifier.testTag(GAME_PROGRESS_TEST_TAG),
                     color = MaterialTheme.colorScheme.primary,
@@ -386,6 +387,11 @@ private fun GameStatusBanner(
     modifier: Modifier = Modifier,
 ) {
     val status = gameStatus(state)
+    val statusMessage = if (status.messageArgument == null) {
+        stringResource(status.message)
+    } else {
+        stringResource(status.message, status.messageArgument)
+    }
 
     Surface(
         modifier = modifier
@@ -420,7 +426,7 @@ private fun GameStatusBanner(
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = stringResource(status.message, status.messageArgument),
+                    text = statusMessage,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -442,7 +448,6 @@ private fun gameStatus(state: GameUiState): GameStatus = when {
         symbol = "!",
         title = R.string.game_status_conflict_title,
         message = R.string.game_status_conflict_message,
-        messageArgument = state.conflictingQueenSquares.size,
         containerColor = MaterialTheme.colorScheme.errorContainer,
         contentColor = MaterialTheme.colorScheme.onErrorContainer,
     )
@@ -450,7 +455,6 @@ private fun gameStatus(state: GameUiState): GameStatus = when {
         symbol = "♛",
         title = R.string.game_status_ready_title,
         message = R.string.game_status_ready_message,
-        messageArgument = state.boardSize,
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     )
@@ -458,7 +462,6 @@ private fun gameStatus(state: GameUiState): GameStatus = when {
         symbol = "✓",
         title = R.string.game_status_safe_title,
         message = R.string.game_status_safe_message,
-        messageArgument = state.queensLeft,
         containerColor = MaterialTheme.colorScheme.tertiaryContainer,
         contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
     )
@@ -551,9 +554,9 @@ private data class GameStatus(
     val symbol: String,
     val title: Int,
     val message: Int,
-    val messageArgument: Int,
     val containerColor: Color,
     val contentColor: Color,
+    val messageArgument: Int? = null,
 )
 
 private enum class GameLayout {

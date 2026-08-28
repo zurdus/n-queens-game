@@ -2,27 +2,68 @@
 
 An Android puzzle game based on the N-Queens problem. Players choose a board size and place queens so that no two queens share a row, column, or diagonal.
 
+## Features
+
+- Select any supported board size from 4 × 4 through 12 × 12.
+- Place and remove queens on a responsive chessboard.
+- See conflicts highlighted immediately and track the number of queens left.
+- Undo the latest move or restart the current puzzle.
+- Celebrate a valid solution, replay the same size, or return to board selection.
+- Use adaptive layouts, light and dark themes, large font scales, and reduced system motion.
+
+## Prerequisites
+
+- Android Studio with Android SDK 37 installed
+- JDK 17
+- An Android device or emulator running API 24 or newer
+
+The project includes the Gradle wrapper, so a separate Gradle installation is not required.
+
+## Build and run
+
+Open the repository root in Android Studio, let Gradle sync, select the `app` run configuration and a device, then click **Run**.
+
+From PowerShell on Windows:
+
+```powershell
+.\gradlew.bat assembleDebug
+.\gradlew.bat installDebug
+```
+
+The debug APK is generated at `app/build/outputs/apk/debug/app-debug.apk`. On macOS or Linux, use `./gradlew` in place of `.\gradlew.bat`.
+
+## Test and lint
+
+Run the JVM unit tests:
+
+```powershell
+.\gradlew.bat testDebugUnitTest
+```
+
+Run the Compose UI tests on a connected device or running emulator:
+
+```powershell
+.\gradlew.bat connectedDebugAndroidTest
+```
+
+Run Android lint:
+
+```powershell
+.\gradlew.bat lintDebug
+```
+
+The test strategy is layered: pure JVM tests cover board rules, immutable game sessions, user operations, ViewModels, and Koin wiring; connected Compose tests cover board interaction, adaptive layouts, navigation, reset and undo behavior, conflict feedback, counters, and the victory flow.
+
 ## Architecture
 
-- Use Jetpack Compose for UI and a screen-level `ViewModel` as the state holder.
-- Expose durable renderable state as an immutable model through `StateFlow`.
-- Keep one immutable domain session as the source of game state and derive render-only UI state from it.
-- Expose a `SharedFlow` only when a screen has a genuine transient effect. Never add an empty event stream solely to satisfy a pattern.
-- Keep screen content composables stateless: state flows down and named user callbacks flow up.
-- Handle navigation-only clicks through UI callbacks. Involve the ViewModel only when navigation depends on business logic or durable state.
-- Use Material 3 Adaptive window size classes for screen-level layout decisions.
-- Prefer Material 3 components over custom equivalents whenever they satisfy the design.
-- Add use cases only for user-recognizable domain operations, such as starting or resetting a game. Do not wrap one-line validation or UI state changes in use cases.
-- Every use case has one public behavior method: `operator fun invoke(...)`.
-- Prefer one app module organized feature-first until module boundaries solve a real build or ownership problem.
-- Add abstractions when they protect a domain rule, enable testing, or remove meaningful duplication—not in anticipation of hypothetical needs.
-- Keep the root `NavHost` in the app-level navigation package and each feature graph and its Kotlin-serialization destinations in that feature's `.navigation` package.
-- Feature graphs receive the `NavController` and translate presentation callbacks into internal navigation. Cross-feature navigation is supplied to feature graphs as a root-owned callback.
-- Keep presentation independent of Navigation Compose: screens expose named callbacks and never receive a `NavController`.
-- Let each destination call one exposed screen composable. Keep ViewModel coordination, the private scaffold overload, and stateless screen content together in the screen file.
-- Let each feature own its Koin module; the app-level DI package only aggregates feature modules.
-- Create layer subpackages only when they contain real code. Do not add empty `data`, `model`, `usecase`, or `component` packages.
-- Keep models with the layer whose meaning they represent: business models in domain, storage/transport models in data, and render-only models in presentation.
+- **Feature-first single module:** board selection and gameplay own their presentation, navigation, domain, and DI code. A single module keeps the assessment lean while package boundaries preserve ownership and dependency direction.
+- **Unidirectional state flow:** screen-level ViewModels expose immutable `StateFlow` UI state. Stateless content composables receive state and named callbacks.
+- **Domain-owned game changes:** an immutable `NQueensGameSession` is the source of truth. User-recognizable operations such as changing a queen placement, undoing, and restarting are implemented as use cases with `operator fun invoke(...)`.
+- **Typed navigation:** Kotlin-serialization destinations live inside feature navigation packages. The root `NavHost` installs feature graphs and owns cross-feature transitions; presentation code never receives a `NavController`.
+- **Dependency injection:** Koin modules are feature-owned and aggregated at the application level.
+- **Adaptive Material 3 UI:** Compose Material 3 and its Adaptive window size classes choose compact, medium, and expanded layouts without manual width breakpoints.
+- **State-driven motion:** named transitions in `ui.motion` animate queens and celebration content directly from rendered state. Animation flags and transient navigation events are not stored in ViewModels.
+- **Pragmatic abstractions:** shared components and rules are extracted only when they have multiple consumers or protect meaningful behavior.
 
 ## Package structure
 
@@ -38,5 +79,10 @@ An Android puzzle game based on the N-Queens problem. Players choose a board siz
 - `com.zurdus.nqueens.feature.game.navigation`: typed game destination and nested feature graph
 - `com.zurdus.nqueens.feature.game.di`: game Koin module
 - `com.zurdus.nqueens.ui.component`: shared Compose components with multiple feature consumers
+- `com.zurdus.nqueens.ui.motion`: reusable named Compose transitions and entrance behavior
 - `com.zurdus.nqueens.ui.theme`: branded Material 3 light/dark theme
 - `com.zurdus.nqueens.ui.preview`: reusable theme, font-scale, and display-size previews
+
+## AI assistance
+
+OpenAI Codex assisted throughout design exploration, project scaffolding, implementation, refactoring, testing, and review. All decisions and code were reviewed and are owned by the author.

@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.cos
@@ -41,8 +42,9 @@ internal fun AnimatedEntrance(
     modifier: Modifier = Modifier,
     content: @Composable AnimatedVisibilityScope.() -> Unit,
 ) {
-    val visibilityState = remember {
-        MutableTransitionState(false).apply {
+    val isPreview = LocalInspectionMode.current
+    val visibilityState = remember(isPreview) {
+        MutableTransitionState(isPreview).apply {
             targetState = true
         }
     }

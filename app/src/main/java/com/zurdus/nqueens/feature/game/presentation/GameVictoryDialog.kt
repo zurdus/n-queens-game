@@ -251,8 +251,7 @@ private fun GameVictoryPrize(
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.tertiaryContainer,
-        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        color = MaterialTheme.colorScheme.primary,
         shape = CircleShape,
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -275,7 +274,7 @@ private fun GameVictorySparkle(
     Text(
         text = SPARKLE_GLYPH,
         modifier = modifier,
-        color = MaterialTheme.colorScheme.onTertiaryContainer,
+        color = MaterialTheme.colorScheme.secondary,
         fontSize = fontSize,
         fontWeight = FontWeight.Bold,
         lineHeight = fontSize,

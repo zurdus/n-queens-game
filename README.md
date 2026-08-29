@@ -1,23 +1,21 @@
 # N Queens
 
-An Android puzzle game based on the N-Queens problem. Players choose a board size and place queens so that no two queens share a row, column, or diagonal.
+An Android puzzle game based on the N-Queens problem. Players choose an _n × n_ board size and place _n_ queens so that no two queens share a row, column, or diagonal.
 
 ## Features
 
-- Select any supported board size from 4 × 4 through 12 × 12.
+- Select any supported board size from 4 × 4 through 12 × 12. The upper limit was decided to make the board size comfortable to the user.
 - Place and remove queens on a responsive chessboard.
 - See conflicts highlighted immediately and track the number of queens left.
 - Undo the latest move or restart the current puzzle.
-- Celebrate a valid solution, replay the same size, or return to board selection.
-- Use adaptive layouts, light and dark themes, large font scales, and reduced system motion.
+- A victory screen when a puzzle is completed, replay the same size, or return to board selection.
+- Support adaptive layouts, light and dark themes, large font scales, and reduced system motion.
 
 ## Prerequisites
 
 - Android Studio with Android SDK 37 installed
 - JDK 17
 - An Android device or emulator running API 24 or newer
-
-The project includes the Gradle wrapper, so a separate Gradle installation is not required.
 
 ## Build and run
 
@@ -56,13 +54,13 @@ The test strategy is layered: pure JVM tests cover board rules, immutable game s
 
 ## Architecture
 
-- **Feature-first single module:** board selection and gameplay own their presentation, navigation, domain, and DI code. A single module keeps the assessment lean while package boundaries preserve ownership and dependency direction.
+- **Feature-first single module:** board selection and gameplay own their presentation, navigation, domain, and DI code. A single module to keep the code simple while package boundaries preserve ownership and dependency direction.
 - **Unidirectional state flow:** screen-level ViewModels expose immutable `StateFlow` UI state. Stateless content composables receive state and named callbacks.
 - **Domain-owned game changes:** an immutable `GameSession` is the source of truth. User-recognizable operations such as changing a queen placement, undoing, and restarting are implemented as use cases with `operator fun invoke(...)`.
 - **Typed navigation:** Kotlin-serialization routes live inside feature navigation packages. The root `NavHost` creates the controller and installs feature graphs; each graph exposes a typed entry route, owns its destinations, and handles transitions initiated within that feature. Presentation code never receives a `NavController`.
 - **Dependency injection:** Koin modules are feature-owned and aggregated at the application level.
 - **Adaptive Material 3 UI:** Compose Material 3 and its Adaptive window size classes choose compact, medium, and expanded layouts without manual width breakpoints.
-- **State-driven motion:** named transitions in `ui.motion` animate queens and celebration content directly from rendered state. Animation flags and transient navigation events are not stored in ViewModels.
+- **State-driven motion:** named transitions in `ui.motion` animate queens and celebration content directly from rendered state.
 - **Pragmatic abstractions:** shared components and rules are extracted only when they have multiple consumers or protect meaningful behavior.
 
 ## Package structure
@@ -85,4 +83,4 @@ The test strategy is layered: pure JVM tests cover board rules, immutable game s
 
 ## AI assistance
 
-OpenAI Codex assisted throughout design exploration, project scaffolding, implementation, refactoring, testing, and review. All decisions and code were reviewed and are owned by the author.
+OpenAI Codex assisted through design exploration, project scaffolding, implementation, refactoring, testing, and review. All decisions and code were reviewed by the developer.

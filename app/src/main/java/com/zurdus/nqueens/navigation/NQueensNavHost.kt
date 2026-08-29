@@ -8,7 +8,6 @@ import androidx.navigation.compose.rememberNavController
 import com.zurdus.nqueens.feature.boardsize.navigation.BoardSizeGraph
 import com.zurdus.nqueens.feature.boardsize.navigation.boardSizeNavGraph
 import com.zurdus.nqueens.feature.game.navigation.gameNavGraph
-import com.zurdus.nqueens.feature.game.navigation.navigateToGame
 
 @Composable
 fun NQueensNavHost(
@@ -20,9 +19,7 @@ fun NQueensNavHost(
         startDestination = BoardSizeGraph,
         modifier = modifier,
     ) {
-        boardSizeNavGraph(
-            onStartGame = navController::navigateToGame,
-        )
+        boardSizeNavGraph(navController)
         gameNavGraph(navController)
     }
 }

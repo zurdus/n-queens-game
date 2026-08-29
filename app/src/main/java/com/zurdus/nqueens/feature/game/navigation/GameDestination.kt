@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 internal sealed interface GameDestination {
 
     @Serializable
-    data class Board(val boardSize: Int) : GameDestination
+    data object Board : GameDestination
 }

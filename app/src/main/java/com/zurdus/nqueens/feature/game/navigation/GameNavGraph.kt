@@ -1,5 +1,6 @@
 package com.zurdus.nqueens.feature.game.navigation
 
+import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -9,27 +10,24 @@ import com.zurdus.nqueens.feature.game.presentation.GameScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data object GameNavGraph
+internal data class GameNavGraph(val boardSize: Int)
 
 internal fun NavGraphBuilder.gameNavGraph(
     navController: NavController,
 ) {
     navigation<GameNavGraph>(
-        startDestination = GameDestination.Board::class,
+        startDestination = GameDestination.Board,
     ) {
         composable<GameDestination.Board> { backStackEntry ->
-            val destination = backStackEntry.toRoute<GameDestination.Board>()
+            val gameGraphEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<GameNavGraph>()
+            }
+            val gameGraph = gameGraphEntry.toRoute<GameNavGraph>()
 
             GameScreen(
-                boardSize = destination.boardSize,
+                boardSize = gameGraph.boardSize,
                 onNavigateBack = navController::navigateUp,
             )
         }
-    }
-}
-
-internal fun NavController.navigateToGame(boardSize: Int) {
-    navigate(GameDestination.Board(boardSize = boardSize)) {
-        launchSingleTop = true
     }
 }

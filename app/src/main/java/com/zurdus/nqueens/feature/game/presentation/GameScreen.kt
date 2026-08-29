@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -47,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -55,6 +58,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
@@ -302,10 +306,12 @@ private fun GameProgressCard(
         shape = RoundedCornerShape(20.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                itemVerticalAlignment = Alignment.CenterVertically,
+                maxItemsInEachRow = 2,
             ) {
                 Text(
                     text = stringResource(R.string.game_your_progress),
@@ -322,6 +328,7 @@ private fun GameProgressCard(
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
+                    maxLines = 1,
                 )
             }
 
@@ -392,6 +399,7 @@ private fun GameStatusBanner(
     } else {
         stringResource(status.message, status.messageArgument)
     }
+    val iconFontSize = with(LocalDensity.current) { 18.dp.toSp() }
 
     Surface(
         modifier = modifier
@@ -415,7 +423,9 @@ private fun GameStatusBanner(
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         text = status.symbol,
+                        fontSize = iconFontSize,
                         fontWeight = FontWeight.Bold,
+                        lineHeight = iconFontSize,
                     )
                 }
             }
@@ -492,22 +502,30 @@ private fun GameBottomBar(
             Row(
                 modifier = Modifier
                     .widthIn(max = MAX_CONTROLS_WIDTH)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 OutlinedButton(
                     onClick = onUndoClick,
                     modifier = Modifier
                         .weight(1f)
+                        .fillMaxHeight()
                         .testTag(GAME_UNDO_TEST_TAG),
                     enabled = canUndo,
                 ) {
-                    Text(text = stringResource(R.string.game_undo))
+                    Text(
+                        text = stringResource(R.string.game_undo),
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
+                    )
                 }
                 FilledTonalButton(
                     onClick = onResetClick,
                     modifier = Modifier
                         .weight(1f)
+                        .fillMaxHeight()
                         .testTag(GAME_RESET_TEST_TAG),
                     enabled = hasQueens,
                 ) {
@@ -515,6 +533,8 @@ private fun GameBottomBar(
                         text = stringResource(
                             if (isSolved) R.string.game_play_again else R.string.game_reset,
                         ),
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }

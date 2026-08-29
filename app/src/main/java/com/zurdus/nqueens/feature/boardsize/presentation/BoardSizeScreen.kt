@@ -302,6 +302,7 @@ private fun BoardSizeSelectorCard(
         state.maximumSize,
     )
     val sliderDescription = stringResource(R.string.board_size_slider_content_description)
+    val iconFontSize = with(LocalDensity.current) { 18.dp.toSp() }
 
     Surface(
         modifier = modifier.testTag(BOARD_SIZE_CONTROLS_TEST_TAG),
@@ -322,7 +323,9 @@ private fun BoardSizeSelectorCard(
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = "♛",
+                            fontSize = iconFontSize,
                             fontWeight = FontWeight.Bold,
+                            lineHeight = iconFontSize,
                         )
                     }
                 }

@@ -5,11 +5,8 @@ import com.zurdus.nqueens.feature.game.domain.model.NQueensGameSession
 
 internal class RestartGame {
 
-    operator fun invoke(session: NQueensGameSession): NQueensGameSession {
-        val restartedSession = NQueensGameSession(
+    operator fun invoke(session: NQueensGameSession): NQueensGameSession =
+        NQueensGameSession(
             currentGame = NQueensGame(boardSize = session.currentGame.boardSize),
         )
-
-        return if (restartedSession == session) session else restartedSession
-    }
 }

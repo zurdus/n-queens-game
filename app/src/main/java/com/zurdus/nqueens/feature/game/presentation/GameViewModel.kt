@@ -3,8 +3,8 @@ package com.zurdus.nqueens.feature.game.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zurdus.nqueens.feature.game.domain.model.BoardSquare
-import com.zurdus.nqueens.feature.game.domain.model.NQueensGame
-import com.zurdus.nqueens.feature.game.domain.model.NQueensGameSession
+import com.zurdus.nqueens.feature.game.domain.model.GameSession
+import com.zurdus.nqueens.feature.game.domain.model.Position
 import com.zurdus.nqueens.feature.game.domain.usecase.ChangeQueenPlacement
 import com.zurdus.nqueens.feature.game.domain.usecase.RestartGame
 import com.zurdus.nqueens.feature.game.domain.usecase.UndoLastMove
@@ -23,12 +23,12 @@ internal class GameViewModel(
 ) : ViewModel() {
 
     private val sessionState = MutableStateFlow(
-        NQueensGameSession(
-            currentGame = NQueensGame(boardSize = boardSize),
+        GameSession(
+            currentPosition = Position(boardSize = boardSize),
         ),
     )
     val uiState: StateFlow<GameUiState> = sessionState
-        .map(NQueensGameSession::toUiState)
+        .map(GameSession::toUiState)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
@@ -53,15 +53,15 @@ internal class GameViewModel(
     }
 }
 
-private fun NQueensGameSession.toUiState(): GameUiState {
-    val game = currentGame
+private fun GameSession.toUiState(): GameUiState {
+    val position = currentPosition
 
     return GameUiState(
-        boardSize = game.boardSize,
-        queenSquares = game.queenSquares,
-        conflictingQueenSquares = game.conflictingQueenSquares,
-        queensLeft = game.queensLeft,
-        isSolved = game.isSolved,
+        boardSize = position.boardSize,
+        queenSquares = position.queenSquares,
+        conflictingQueenSquares = position.conflictingQueenSquares,
+        queensLeft = position.queensLeft,
+        isSolved = position.isSolved,
         canUndo = canUndo,
     )
 }

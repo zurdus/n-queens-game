@@ -1,36 +1,36 @@
 package com.zurdus.nqueens.feature.game.domain
 
 import com.zurdus.nqueens.feature.game.domain.model.BoardSquare
-import com.zurdus.nqueens.feature.game.domain.model.NQueensGame
+import com.zurdus.nqueens.feature.game.domain.model.Position
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class NQueensGameTest {
+class PositionTest {
 
     @Test
-    fun `new game starts empty with every queen left to place`() {
-        val game = NQueensGame(boardSize = 8)
+    fun `new position starts empty with every queen left to place`() {
+        val position = Position(boardSize = 8)
 
-        assertTrue(game.queenSquares.isEmpty())
-        assertEquals(8, game.queensLeft)
-        assertFalse(game.isSolved)
+        assertTrue(position.queenSquares.isEmpty())
+        assertEquals(8, position.queensLeft)
+        assertFalse(position.isSolved)
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `board smaller than four is rejected`() {
-        NQueensGame(boardSize = 3)
+        Position(boardSize = 3)
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `board larger than the supported maximum is rejected`() {
-        NQueensGame(boardSize = 13)
+        Position(boardSize = 13)
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `queen outside the board is rejected`() {
-        NQueensGame(
+        Position(
             boardSize = 4,
             queenSquares = setOf(BoardSquare(row = 4, column = 0)),
         )
@@ -43,7 +43,7 @@ class NQueensGameTest {
             BoardSquare(row = 3, column = 0),
             BoardSquare(row = 2, column = 2),
         ).forEach { secondQueenSquare ->
-            val game = NQueensGame(
+            val position = Position(
                 boardSize = 4,
                 queenSquares = setOf(
                     BoardSquare(row = 0, column = 0),
@@ -51,14 +51,14 @@ class NQueensGameTest {
                 ),
             )
 
-            assertEquals(game.queenSquares, game.conflictingQueenSquares)
-            assertFalse(game.isSolved)
+            assertEquals(position.queenSquares, position.conflictingQueenSquares)
+            assertFalse(position.isSolved)
         }
     }
 
     @Test
     fun `valid complete board is solved`() {
-        val game = NQueensGame(
+        val position = Position(
             boardSize = 4,
             queenSquares = setOf(
                 BoardSquare(row = 0, column = 1),
@@ -68,9 +68,9 @@ class NQueensGameTest {
             ),
         )
 
-        assertTrue(game.conflictingQueenSquares.isEmpty())
-        assertEquals(0, game.queensLeft)
-        assertTrue(game.isSolved)
+        assertTrue(position.conflictingQueenSquares.isEmpty())
+        assertEquals(0, position.queensLeft)
+        assertTrue(position.isSolved)
     }
 
 }

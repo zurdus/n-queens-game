@@ -1,8 +1,8 @@
 package com.zurdus.nqueens.feature.game.domain
 
 import com.zurdus.nqueens.feature.game.domain.model.BoardSquare
-import com.zurdus.nqueens.feature.game.domain.model.NQueensGame
-import com.zurdus.nqueens.feature.game.domain.model.NQueensGameSession
+import com.zurdus.nqueens.feature.game.domain.model.GameSession
+import com.zurdus.nqueens.feature.game.domain.model.Position
 import com.zurdus.nqueens.feature.game.domain.usecase.ChangeQueenPlacement
 import com.zurdus.nqueens.feature.game.domain.usecase.RestartGame
 import com.zurdus.nqueens.feature.game.domain.usecase.UndoLastMove
@@ -20,19 +20,19 @@ class GameSessionUseCasesTest {
 
     @Test
     fun `placement adds and removes a queen while recording each change`() {
-        val initialGame = NQueensGame(boardSize = 4)
-        val initialSession = NQueensGameSession(currentGame = initialGame)
+        val initialPosition = Position(boardSize = 4)
+        val initialSession = GameSession(currentPosition = initialPosition)
         val square = BoardSquare(row = 1, column = 2)
 
         val sessionWithQueen = changeQueenPlacement(initialSession, square)
         val emptySessionAgain = changeQueenPlacement(sessionWithQueen, square)
 
-        assertEquals(setOf(square), sessionWithQueen.currentGame.queenSquares)
-        assertEquals(listOf(initialGame), sessionWithQueen.previousGames)
-        assertTrue(emptySessionAgain.currentGame.queenSquares.isEmpty())
+        assertEquals(setOf(square), sessionWithQueen.currentPosition.queenSquares)
+        assertEquals(listOf(initialPosition), sessionWithQueen.previousPositions)
+        assertTrue(emptySessionAgain.currentPosition.queenSquares.isEmpty())
         assertEquals(
-            listOf(initialGame, sessionWithQueen.currentGame),
-            emptySessionAgain.previousGames,
+            listOf(initialPosition, sessionWithQueen.currentPosition),
+            emptySessionAgain.previousPositions,
         )
     }
 
@@ -50,7 +50,7 @@ class GameSessionUseCasesTest {
 
     @Test
     fun `placement never adds more queens than the board size`() {
-        val fullGame = NQueensGame(
+        val fullPosition = Position(
             boardSize = 4,
             queenSquares = setOf(
                 BoardSquare(0, 0),
@@ -59,7 +59,7 @@ class GameSessionUseCasesTest {
                 BoardSquare(0, 3),
             ),
         )
-        val session = NQueensGameSession(currentGame = fullGame)
+        val session = GameSession(currentPosition = fullPosition)
 
         val unchangedSession = changeQueenPlacement(
             session = session,
@@ -70,7 +70,7 @@ class GameSessionUseCasesTest {
     }
 
     @Test
-    fun `undo restores the last game and removes it from history`() {
+    fun `undo restores the last position and removes it from history`() {
         val initialSession = emptySession()
         val firstMove = changeQueenPlacement(
             initialSession,
@@ -83,8 +83,8 @@ class GameSessionUseCasesTest {
 
         val undoneSession = undoLastMove(secondMove)
 
-        assertEquals(firstMove.currentGame, undoneSession.currentGame)
-        assertEquals(firstMove.previousGames, undoneSession.previousGames)
+        assertEquals(firstMove.currentPosition, undoneSession.currentPosition)
+        assertEquals(firstMove.previousPositions, undoneSession.previousPositions)
         assertTrue(undoneSession.canUndo)
     }
 
@@ -96,7 +96,7 @@ class GameSessionUseCasesTest {
     }
 
     @Test
-    fun `restart clears the current game and its history`() {
+    fun `restart clears the current position and its history`() {
         val sessionWithQueen = changeQueenPlacement(
             emptySession(),
             BoardSquare(row = 0, column = 1),
@@ -104,13 +104,13 @@ class GameSessionUseCasesTest {
 
         val restartedSession = restartGame(sessionWithQueen)
 
-        assertTrue(restartedSession.currentGame.queenSquares.isEmpty())
-        assertEquals(4, restartedSession.currentGame.boardSize)
-        assertTrue(restartedSession.previousGames.isEmpty())
+        assertTrue(restartedSession.currentPosition.queenSquares.isEmpty())
+        assertEquals(4, restartedSession.currentPosition.boardSize)
+        assertTrue(restartedSession.previousPositions.isEmpty())
         assertFalse(restartedSession.canUndo)
     }
 
-    private fun emptySession() = NQueensGameSession(
-        currentGame = NQueensGame(boardSize = 4),
+    private fun emptySession() = GameSession(
+        currentPosition = Position(boardSize = 4),
     )
 }

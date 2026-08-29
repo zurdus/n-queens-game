@@ -58,7 +58,7 @@ The test strategy is layered: pure JVM tests cover board rules, immutable game s
 
 - **Feature-first single module:** board selection and gameplay own their presentation, navigation, domain, and DI code. A single module keeps the assessment lean while package boundaries preserve ownership and dependency direction.
 - **Unidirectional state flow:** screen-level ViewModels expose immutable `StateFlow` UI state. Stateless content composables receive state and named callbacks.
-- **Domain-owned game changes:** an immutable `NQueensGameSession` is the source of truth. User-recognizable operations such as changing a queen placement, undoing, and restarting are implemented as use cases with `operator fun invoke(...)`.
+- **Domain-owned game changes:** an immutable `GameSession` is the source of truth. User-recognizable operations such as changing a queen placement, undoing, and restarting are implemented as use cases with `operator fun invoke(...)`.
 - **Typed navigation:** Kotlin-serialization routes live inside feature navigation packages. The root `NavHost` creates the controller and installs feature graphs; each graph exposes a typed entry route, owns its destinations, and handles transitions initiated within that feature. Presentation code never receives a `NavController`.
 - **Dependency injection:** Koin modules are feature-owned and aggregated at the application level.
 - **Adaptive Material 3 UI:** Compose Material 3 and its Adaptive window size classes choose compact, medium, and expanded layouts without manual width breakpoints.

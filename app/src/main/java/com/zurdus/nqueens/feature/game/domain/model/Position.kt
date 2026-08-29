@@ -2,7 +2,7 @@ package com.zurdus.nqueens.feature.game.domain.model
 
 import com.zurdus.nqueens.domain.NQueensRules
 
-internal data class NQueensGame(
+internal data class Position(
     val boardSize: Int,
     val queenSquares: Set<BoardSquare> = emptySet(),
 ) {
@@ -12,7 +12,7 @@ internal data class NQueensGame(
                 "and ${NQueensRules.MAXIMUM_BOARD_SIZE}."
         }
         require(queenSquares.size <= boardSize) {
-            "A game cannot contain more queens than its board size."
+            "A position cannot contain more queens than its board size."
         }
         require(queenSquares.all { square -> square.isOnBoard(boardSize) }) {
             "Every queen must be placed on the board."
